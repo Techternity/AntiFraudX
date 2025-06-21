@@ -263,8 +263,7 @@ function App() {
           </section>
         </main>
 
-        {/* Footer */}
-        <footer className="bg-gray-800 text-white py-8">
+        {/* Footer */}        <footer className="bg-gray-800 text-white py-8">
           <div className="container mx-auto px-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div>
@@ -291,22 +290,6 @@ function App() {
             </div>
           </div>
         </footer>
-        <button 
-          onClick={() => currentUser ? setShowSolution(true) : setShowLoginForm(true)} 
-          style={{
-            position: 'fixed',
-            top: 10,
-            right: 10,
-            zIndex: 1000,
-            padding: "8px 12px",
-            backgroundColor: "#f3f4f6",
-            border: "1px solid #d1d5db",
-            borderRadius: "4px",
-            cursor: "pointer"
-          }}
-        >
-          Launch Demo
-        </button>
       </div>
     );
   };
