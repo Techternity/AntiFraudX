@@ -10,7 +10,7 @@ function App() {
   const [currentUser, setCurrentUser] = useState<BankUser | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Check for existing user session in localStorage when the app loads
+  // Check for existing user session in localStorage when the app loads AND
   useEffect(() => {
     console.log("App initialization useEffect running");
     const savedUser = localStorage.getItem('currentUser');
