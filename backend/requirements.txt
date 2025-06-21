@@ -1,7 +1,8 @@
-fastapi
-uvicorn[standard]
-python-multipart
-pandas
-scikit-learn
-joblib
-xgboost 
+fastapi==0.115.0
+uvicorn==0.30.6
+pandas==2.2.2
+numpy==1.26.4
+scikit-learn==1.6.1  # Match the version used for .pkl files
+joblib==1.4.2
+xgboost==2.0.3  # Use a recent but stable version
+python-multipart==0.0.9

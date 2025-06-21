@@ -39,7 +39,7 @@ try:
     le_reason = joblib.load(os.path.join(BASE_DIR, "le_reason.pkl"))
     le_label = joblib.load(os.path.join(BASE_DIR, "le_label.pkl"))
     scaler = joblib.load(os.path.join(BASE_DIR, "scaler.pkl"))
-    #print("Models loaded successfully")
+    print("Models loaded successfully")
 except FileNotFoundError as e:
     # This is a fallback for when the model files are not found.
     # In a real application, you would handle this more gracefully.
