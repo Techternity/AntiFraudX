@@ -47,10 +47,6 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
             aValue = a.original_data.transaction_amount;
             bValue = b.original_data.transaction_amount;
             break;
-          case 'cibyl_score':
-            aValue = a.risk_analysis.cibyl_score;
-            bValue = b.risk_analysis.cibyl_score;
-            break;
           case 'risk_level':
             aValue = a.risk_analysis.risk_level;
             bValue = b.risk_analysis.risk_level;
@@ -164,7 +160,6 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
               <SortableHeader field="account_id">Account ID</SortableHeader>
               <SortableHeader field="user_id">User ID</SortableHeader>
               <SortableHeader field="amount">Amount</SortableHeader>
-              <SortableHeader field="cibyl_score">CIBYL Score</SortableHeader>
               <SortableHeader field="risk_level">Risk Level</SortableHeader>
               <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                 Recommendation
@@ -173,7 +168,7 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
                 Blockchain TX
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                Risk Factors
+                Model Prediction
               </th>
             </tr>
           </thead>
@@ -188,9 +183,6 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   ₹{transaction.original_data.transaction_amount.toLocaleString()}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">
-                  {transaction.risk_analysis.cibyl_score.toFixed(3)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getRiskLevelColor(transaction.risk_analysis.risk_level)}`}>
@@ -207,8 +199,7 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-500">
                   <div className="max-w-xs truncate">
-                    {transaction.risk_analysis.risk_factors.slice(0, 2).join(', ')}
-                    {transaction.risk_analysis.risk_factors.length > 2 && '...'}
+                    {transaction.risk_analysis.risk_factors[0]}
                   </div>
                 </td>
               </tr>

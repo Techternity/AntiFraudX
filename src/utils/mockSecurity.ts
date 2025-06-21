@@ -12,7 +12,7 @@ export const generateSessionKey = (): string => {
 
 // Validate transaction input
 export const validateTransaction = (transaction: Transaction): boolean => {
-  const requiredFields = ['account_id', 'user_id', 'transaction_amount', 'recipient_account'];
+  const requiredFields = ['user_id'];
   return requiredFields.every(field => transaction[field as keyof Transaction] !== undefined);
 };
 
@@ -181,14 +181,20 @@ export const processTransaction = (
 
 // Parse CSV content
 export const parseCSV = (content: string): Transaction[] => {
-  const lines = content.trim().split('\n');
+  const lines = content.trim().split('\n').filter(line => line);
+  if (lines.length < 2) {
+    throw new Error('CSV file must have a header and at least one data row.');
+  }
+  
   const headers = lines[0].split(',').map(h => h.trim());
   
   const requiredHeaders = [
-    'account_id', 'user_id', 'transaction_amount', 'recipient_account',
-    'sender_country', 'recipient_country', 'account_age_days',
-    'previous_failed_transactions', 'transaction_type', 'purpose',
-    'sender_account_verified'
+    'user_id', 
+    'num_savings_accounts', 
+    'num_current_accounts',
+    'transaction_amount', 
+    'transaction_date', 
+    'account_opening_reason'
   ];
   
   const missingHeaders = requiredHeaders.filter(h => !headers.includes(h));
@@ -198,25 +204,32 @@ export const parseCSV = (content: string): Transaction[] => {
   
   return lines.slice(1).map((line, index) => {
     const values = line.split(',').map(v => v.trim());
-    const transaction: any = {};
-    
+    const csvData: any = {};
     headers.forEach((header, i) => {
-      let value: any = values[i] || '';
-      
-      // Type conversions
-      if (['transaction_amount', 'account_age_days', 'previous_failed_transactions'].includes(header)) {
-        value = parseFloat(value) || 0;
-      } else if (header === 'sender_account_verified') {
-        value = value.toLowerCase() === 'true';
-      }
-      
-      transaction[header] = value;
+      csvData[header] = values[i] || '';
     });
+
+    const transaction: Transaction = {
+      // Fields from the new CSV format
+      user_id: csvData.user_id,
+      transaction_amount: parseFloat(csvData.transaction_amount) || 0,
+      
+      // Mocked fields for compatibility with the rest of the application
+      account_id: csvData.account_id || `ACC_${csvData.user_id}_${index}`,
+      recipient_account: `RECIPIENT_${index}`,
+      sender_country: 'IN',
+      recipient_country: 'IN',
+      account_age_days: 90, // default value
+      previous_failed_transactions: 0, // default value
+      transaction_type: 'transfer', // default value
+      purpose: 'personal', // default value
+      sender_account_verified: true, // default value
+    };
     
     if (!validateTransaction(transaction)) {
       throw new Error(`Invalid transaction data at row ${index + 2}`);
     }
     
-    return transaction as Transaction;
+    return transaction;
   });
 };

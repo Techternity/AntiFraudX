@@ -88,27 +88,92 @@ function App() {
       setCurrentStep(2);
       await new Promise(resolve => setTimeout(resolve, 800));
 
-      // Steps 3-8: Process each transaction
-      const processed: ProcessedTransaction[] = [];
-      for (let i = 0; i < transactions.length; i++) {
-        const transaction = transactions[i];
-        
-        // Simulate processing steps
-        for (let step = 3; step <= 7; step++) {
-          setCurrentStep(step);
-          await new Promise(resolve => setTimeout(resolve, 200));
-        }
-        
-        const processedTransaction = processTransaction(transaction, sessionKey);
-        processed.push(processedTransaction);
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('http://127.0.0.1:8000/', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Prediction server failed');
       }
+
+      const results: { user_id: string; score_label: string }[] = await response.json();
+
+      // We need to map the results from the python backend to the ProcessedTransaction type
+      // that the rest of the application expects.
+      const processed = results.map((result, i) => {
+        // Find the original transaction data to get other fields
+        const originalTx = transactions.find(t => t.user_id === result.user_id);
+
+        const riskLevelMap = {
+          good: 'LOW',
+          moderate: 'MODERATE',
+          bad: 'CRITICAL',
+        };
+        
+        const risk_level = riskLevelMap[result.score_label as keyof typeof riskLevelMap] || 'MODERATE';
+
+        // We are creating a mock ProcessedTransaction object.
+        // Some data will be mocked or set to default values.
+        return {
+          original_data: originalTx || {
+            account_id: `ACC${i}`,
+            user_id: result.user_id,
+            transaction_amount: 0,
+            recipient_account: 'N/A',
+            sender_country: 'N/A',
+            recipient_country: 'N/A',
+            account_age_days: 0,
+            previous_failed_transactions: 0,
+            transaction_type: 'N/A',
+            purpose: 'N/A',
+            sender_account_verified: false,
+          },
+          encrypted_data: {
+            encrypted_data: 'mock_encrypted_data',
+            transaction_hash: 'mock_tx_hash',
+            hmac: 'mock_hmac',
+            encryption_method: 'AES-256-GCM',
+            timestamp: Date.now(),
+            nonce: 'mock_nonce',
+          },
+          blockchain_tx: {
+            tx_hash: `0xmock_tx_hash_${i}`,
+            block_number: 1,
+            from_address: '0xmock_from',
+            to_address: '0xmock_to',
+            gas_used: 21000,
+            gas_price: 50,
+            status: 'confirmed',
+            timestamp: Date.now(),
+            data_hash: 'mock_data_hash',
+            merkle_leaf: 'mock_merkle_leaf',
+            chain_id: 1,
+            nonce: 'mock_nonce',
+          },
+          risk_analysis: {
+            cibyl_score: 0, // The new model does not provide a score, just a label.
+            risk_level: risk_level,
+            risk_factors: [result.score_label],
+            recommendation: risk_level === 'CRITICAL' ? 'BLOCK' : (risk_level === 'MODERATE' ? 'REVIEW' : 'APPROVE'),
+            confidence: 0.95,
+            security_checks: [],
+          },
+          processed_at: new Date().toISOString(),
+          security_session: sessionKey,
+        } as ProcessedTransaction;
+      });
 
       setCurrentStep(8);
       await new Promise(resolve => setTimeout(resolve, 500));
 
       setProcessedTransactions(processed);
       setIsProcessing(false);
-      
+
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Processing failed');
       setIsProcessing(false);
