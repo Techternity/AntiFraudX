@@ -713,14 +713,14 @@ function App() {
                 </ul>
               </div>
               <div>
-                <h4 className="text-lg font-semibold mb-4">Contact Us</h4>                <p className="text-gray-400 mb-2">Email: contact@antifraudx.gov.in</p>
-                <p className="text-gray-400 mb-2">Phone: +91 11-2304-5678</p>
-                <p className="text-gray-400">New Delhi, India</p>
+                <h4 className="text-lg font-semibold mb-4">Contact Us</h4>                <p className="text-gray-400 mb-2">Email: contact@techternity.in</p>
+                <p className="text-gray-400 mb-2">Phone: +91 7501005155</p>
+                <p className="text-gray-400">Kolkata, India</p>
               </div>
             </div>
             <div className="mt-8 border-t border-gray-700 pt-8 flex flex-col md:flex-row justify-between items-center">
               <p className="text-sm text-gray-400 mb-4 md:mb-0">
-                © 2024 AntiFraudX. An official GOI initiative. All rights reserved.
+                © 2025 AntiFraudX. An Techternity initiative. All rights reserved.
               </p>
               <div className="flex space-x-4">                <a href="#" className="text-gray-400 hover:text-white">
                   Facebook
