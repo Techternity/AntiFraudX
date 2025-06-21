@@ -229,59 +229,119 @@ function App() {
                 </button>
               </div>
             </div>
-          </section>
-
-          {/* Trust Score Explanation */}          <section className="mb-16 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-900 to-indigo-900 rounded-xl opacity-70"></div>
-            <div className="absolute top-0 left-0 w-20 h-20 bg-purple-400 rounded-full opacity-20 -mt-10 -ml-10 animate-pulse"></div>
-            <div className="absolute bottom-0 right-0 w-32 h-32 bg-purple-400 rounded-full opacity-20 -mb-16 -mr-16 animate-pulse"></div>
+          </section>          {/* Trust Score Explanation */}          <section className="mb-16 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-gray-800 to-slate-900 rounded-xl"></div>
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-900/40 via-transparent to-transparent"></div>
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-indigo-500 to-transparent"></div>
+            <div className="absolute bottom-0 right-0 w-full h-1 bg-gradient-to-r from-transparent via-indigo-500 to-transparent"></div>
             
-            <div className="relative z-10 py-12 px-8 rounded-xl border border-gray-700 shadow-2xl backdrop-blur-sm">
-              <div className="text-center mb-12">
-                <span className="inline-block px-5 py-2 bg-purple-800 text-purple-100 rounded-full font-medium mb-3">Trust Analytics</span>
-                <h3 className="text-3xl font-semibold text-white mb-2">Understanding the Trust Score</h3>
-                <p className="text-gray-300 max-w-3xl mx-auto">Our advanced algorithm analyzes multiple factors to calculate a comprehensive Trust Score that helps identify potentially fraudulent activities</p>
+            <div className="relative z-10 py-16 px-8">
+              <div className="text-center mb-16 relative">
+                <div className="absolute inset-x-0 top-1/2 h-px bg-gradient-to-r from-transparent via-indigo-500 to-transparent"></div>
+                <span className="inline-flex items-center px-4 py-1 rounded-full bg-gradient-to-r from-indigo-600 to-blue-600 text-white text-sm font-medium tracking-wider mb-4">
+                  <span className="w-2 h-2 bg-white rounded-full mr-2 animate-pulse"></span>
+                  TRUST ANALYTICS
+                </span>
+                <h3 className="text-4xl font-bold text-white mb-4 tracking-tight">Understanding the Trust Score</h3>
+                <p className="text-gray-300 max-w-3xl mx-auto text-lg">
+                  Our advanced algorithm analyzes multiple factors to calculate a comprehensive Trust Score that helps identify potentially fraudulent activities
+                </p>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white rounded-2xl shadow-md p-6 text-center border-t-4 border-red-500 hover:shadow-lg transition-shadow duration-300">
-                  <div className="inline-flex items-center justify-center w-20 h-20 bg-red-100 rounded-full mb-4">
-                    <AlertTriangle className="text-red-500" size={36} />
-                  </div>
-                  <h4 className="text-xl font-bold text-gray-800 mb-2">Danger Zone (0-300)</h4>
-                  <p className="text-gray-600">
-                    High-risk accounts with suspicious transaction patterns requiring immediate attention.
-                  </p>
-                  <div className="w-full h-2 bg-gray-200 rounded-full mt-4">
-                    <div className="h-full bg-red-500 rounded-full" style={{width: '30%'}}></div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {/* Danger Zone Card */}
+                <div className="relative group">
+                  <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-red-900 rounded-2xl blur-sm group-hover:blur opacity-70 group-hover:opacity-80 transition-all duration-300 -z-10"></div>
+                  <div className="backdrop-blur-md bg-black/30 p-8 rounded-2xl border border-red-500/30 hover:border-red-500/50 shadow-xl transition-all duration-300 h-full flex flex-col">
+                    <div className="flex justify-between items-start mb-6">
+                      <div className="flex items-center">
+                        <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-red-500 to-red-700 shadow-lg">
+                          <AlertTriangle className="text-white" size={24} />
+                        </div>
+                        <div className="ml-4">
+                          <h4 className="text-xl font-bold text-white">Danger Zone</h4>
+                          <p className="text-red-300 font-medium">Score: 0-300</p>
+                        </div>
+                      </div>
+                      <span className="text-2xl font-bold text-red-400">30%</span>
+                    </div>
+                    <p className="text-gray-300 mb-6">
+                      High-risk accounts with suspicious transaction patterns requiring immediate attention and investigation.
+                    </p>
+                    <div className="mt-auto">
+                      <div className="w-full h-3 bg-gray-700 rounded-full overflow-hidden">
+                        <div className="h-full bg-gradient-to-r from-red-500 to-red-700 rounded-full" style={{width: '30%'}}></div>
+                      </div>
+                      <div className="flex justify-between text-xs text-gray-400 mt-2">
+                        <span>High Risk</span>
+                        <span>Critical</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 
-                <div className="bg-white rounded-2xl shadow-md p-6 text-center border-t-4 border-yellow-500 hover:shadow-lg transition-shadow duration-300">
-                  <div className="inline-flex items-center justify-center w-20 h-20 bg-yellow-100 rounded-full mb-4">
-                    <AlertTriangle className="text-yellow-500" size={36} />
-                  </div>
-                  <h4 className="text-xl font-bold text-gray-800 mb-2">Warning Zone (301-600)</h4>
-                  <p className="text-gray-600">
-                    Moderate-risk accounts needing review to prevent potential fraud.
-                  </p>
-                  <div className="w-full h-2 bg-gray-200 rounded-full mt-4">
-                    <div className="h-full bg-yellow-500 rounded-full" style={{width: '60%'}}></div>
+                {/* Warning Zone Card */}
+                <div className="relative group">
+                  <div className="absolute inset-0 bg-gradient-to-r from-amber-600 to-amber-800 rounded-2xl blur-sm group-hover:blur opacity-70 group-hover:opacity-80 transition-all duration-300 -z-10"></div>
+                  <div className="backdrop-blur-md bg-black/30 p-8 rounded-2xl border border-amber-500/30 hover:border-amber-500/50 shadow-xl transition-all duration-300 h-full flex flex-col">
+                    <div className="flex justify-between items-start mb-6">
+                      <div className="flex items-center">
+                        <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-amber-700 shadow-lg">
+                          <AlertTriangle className="text-white" size={24} />
+                        </div>
+                        <div className="ml-4">
+                          <h4 className="text-xl font-bold text-white">Warning Zone</h4>
+                          <p className="text-amber-300 font-medium">Score: 301-600</p>
+                        </div>
+                      </div>
+                      <span className="text-2xl font-bold text-amber-400">60%</span>
+                    </div>
+                    <p className="text-gray-300 mb-6">
+                      Moderate-risk accounts needing careful review and monitoring to prevent potential fraudulent activities.
+                    </p>
+                    <div className="mt-auto">
+                      <div className="w-full h-3 bg-gray-700 rounded-full overflow-hidden">
+                        <div className="h-full bg-gradient-to-r from-amber-500 to-amber-700 rounded-full" style={{width: '60%'}}></div>
+                      </div>
+                      <div className="flex justify-between text-xs text-gray-400 mt-2">
+                        <span>Moderate Risk</span>
+                        <span>Needs Attention</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 
-                <div className="bg-white rounded-2xl shadow-md p-6 text-center border-t-4 border-green-500 hover:shadow-lg transition-shadow duration-300">
-                  <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-4">
-                    <CheckCircle className="text-green-500" size={36} />
+                {/* Good Zone Card */}
+                <div className="relative group">
+                  <div className="absolute inset-0 bg-gradient-to-r from-green-600 to-emerald-800 rounded-2xl blur-sm group-hover:blur opacity-70 group-hover:opacity-80 transition-all duration-300 -z-10"></div>
+                  <div className="backdrop-blur-md bg-black/30 p-8 rounded-2xl border border-green-500/30 hover:border-green-500/50 shadow-xl transition-all duration-300 h-full flex flex-col">
+                    <div className="flex justify-between items-start mb-6">
+                      <div className="flex items-center">
+                        <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-emerald-700 shadow-lg">
+                          <CheckCircle className="text-white" size={24} />
+                        </div>
+                        <div className="ml-4">
+                          <h4 className="text-xl font-bold text-white">Good Zone</h4>
+                          <p className="text-green-300 font-medium">Score: 601-900</p>
+                        </div>
+                      </div>
+                      <span className="text-2xl font-bold text-green-400">90%</span>
+                    </div>
+                    <p className="text-gray-300 mb-6">
+                      Low-risk accounts with established trustworthy transaction histories and consistent patterns.
+                    </p>
+                    <div className="mt-auto">
+                      <div className="w-full h-3 bg-gray-700 rounded-full overflow-hidden">
+                        <div className="h-full bg-gradient-to-r from-green-500 to-emerald-700 rounded-full" style={{width: '90%'}}></div>
+                      </div>
+                      <div className="flex justify-between text-xs text-gray-400 mt-2">
+                        <span>Low Risk</span>
+                        <span>Secure</span>
+                      </div>
+                    </div>
                   </div>
-                  <h4 className="text-xl font-bold text-gray-800 mb-2">Good Zone (601-900)</h4>
-                  <p className="text-gray-600">
-                    Low-risk accounts with trustworthy transaction histories.
-                  </p>
-                  <div className="w-full h-2 bg-gray-200 rounded-full mt-4">
-                    <div className="h-full bg-green-500 rounded-full" style={{width: '90%'}}></div>
-                  </div>
-                </div>              </div>
+                </div>
+              </div>
             </div>
           </section>
 
