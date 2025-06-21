@@ -1,19 +1,8 @@
-import { Transaction, RiskAnalysis, BlockchainTransaction, EncryptedData, ProcessedTransaction } from '../types';
+import { Transaction, RiskAnalysis, BlockchainTransaction, EncryptedData, ProcessedTransaction, RawTransaction } from '../types';
 
 // Generate random hex string
 const generateHex = (length: number): string => {
   return Array.from({ length }, () => Math.floor(Math.random() * 16).toString(16)).join('');
-};
-
-// Generate session key
-export const generateSessionKey = (): string => {
-  return generateHex(16);
-};
-
-// Validate transaction input
-export const validateTransaction = (transaction: Transaction): boolean => {
-  const requiredFields = ['user_id'];
-  return requiredFields.every(field => transaction[field as keyof Transaction] !== undefined);
 };
 
 // Mock encryption
@@ -179,57 +168,87 @@ export const processTransaction = (
   };
 };
 
-// Parse CSV content
-export const parseCSV = (content: string): Transaction[] => {
-  const lines = content.trim().split('\n').filter(line => line);
-  if (lines.length < 2) {
-    throw new Error('CSV file must have a header and at least one data row.');
-  }
-  
-  const headers = lines[0].split(',').map(h => h.trim());
-  
-  const requiredHeaders = [
-    'user_id', 
-    'num_savings_accounts', 
-    'num_current_accounts',
-    'transaction_amount', 
-    'transaction_date', 
-    'account_opening_reason'
-  ];
-  
-  const missingHeaders = requiredHeaders.filter(h => !headers.includes(h));
-  if (missingHeaders.length > 0) {
-    throw new Error(`Missing required columns: ${missingHeaders.join(', ')}`);
-  }
-  
-  return lines.slice(1).map((line, index) => {
-    const values = line.split(',').map(v => v.trim());
-    const csvData: any = {};
-    headers.forEach((header, i) => {
-      csvData[header] = values[i] || '';
-    });
+// ======================
+// Mock Security Functions
+// ======================
 
-    const transaction: Transaction = {
-      // Fields from the new CSV format
-      user_id: csvData.user_id,
-      transaction_amount: parseFloat(csvData.transaction_amount) || 0,
-      
-      // Mocked fields for compatibility with the rest of the application
-      account_id: csvData.account_id || `ACC_${csvData.user_id}_${index}`,
-      recipient_account: `RECIPIENT_${index}`,
-      sender_country: 'IN',
-      recipient_country: 'IN',
-      account_age_days: 90, // default value
-      previous_failed_transactions: 0, // default value
-      transaction_type: 'transfer', // default value
-      purpose: 'personal', // default value
-      sender_account_verified: true, // default value
-    };
+export const generateSessionKey = (): string => {
+  // Generate a 32-character random string
+  let result = '';
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  for (let i = 0; i < 32; i++) {
+    result += characters.charAt(Math.floor(Math.random() * characters.length));
+  }
+  return result;
+};
+
+export const parseCSV = (content: string): RawTransaction[] => {
+  const lines = content.trim().split('\n');
+  
+  if (lines.length < 2) {
+    return [];
+  }
+  
+  const headers = lines[0].split(',');
+  return lines.slice(1).map(line => {
+    const values = line.split(',');
+    const transaction: any = {};
     
-    if (!validateTransaction(transaction)) {
-      throw new Error(`Invalid transaction data at row ${index + 2}`);
-    }
+    headers.forEach((header, index) => {
+      if (index < values.length) {
+        const value = values[index].trim();
+        
+        if (['transaction_amount', 'account_age_days', 'previous_failed_transactions'].includes(header)) {
+          transaction[header] = parseFloat(value);
+        } else if (header === 'sender_account_verified') {
+          transaction[header] = value.toLowerCase() === 'true';
+        } else {
+          transaction[header] = value;
+        }
+      }
+    });
     
-    return transaction;
+    return transaction as RawTransaction;
   });
+};
+
+export const processTransactionMock = (transaction: RawTransaction, sessionKey: string) => {
+  // This is just a simplified placeholder - in the Dashboard, we'll
+  // create more detailed transaction processing logic
+  return {
+    original_data: transaction,
+    risk_analysis: {
+      cibyl_score: Math.floor(Math.random() * 900),
+      risk_level: Math.random() > 0.7 ? 'HIGH' : Math.random() > 0.4 ? 'MODERATE' : 'LOW',
+      risk_factors: ['Sample risk factor'],
+      recommendation: Math.random() > 0.8 ? 'BLOCK' : Math.random() > 0.5 ? 'REVIEW' : 'APPROVE',
+      confidence: 0.85 + Math.random() * 0.14,
+      security_checks: ['KYC Verified']
+    },
+    processed_at: new Date().toISOString(),
+    security_session: sessionKey,
+    // Add placeholder values for other required properties
+    encrypted_data: {
+      encrypted_data: 'mock',
+      transaction_hash: 'mock',
+      hmac: 'mock',
+      encryption_method: 'AES-256-GCM',
+      timestamp: Date.now(),
+      nonce: 'mock'
+    },
+    blockchain_tx: {
+      tx_hash: 'mock_tx_hash',
+      block_number: 1,
+      from_address: 'mock_from',
+      to_address: 'mock_to',
+      gas_used: 21000,
+      gas_price: 50,
+      status: 'confirmed',
+      timestamp: Date.now(),
+      data_hash: 'mock_data_hash',
+      merkle_leaf: 'mock_merkle_leaf',
+      chain_id: 1,
+      nonce: 'mock_nonce'
+    }
+  };
 };
