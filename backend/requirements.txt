@@ -4,4 +4,4 @@ python-multipart
 pandas
 scikit-learn
 joblib
-xgboost 
+xgboost
