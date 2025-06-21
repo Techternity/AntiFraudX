@@ -68,12 +68,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     };
 
     transactions.forEach(t => {
-      const { risk_level, recommendation } = t.risk_analysis;
+      const { risk_level } = t.risk_analysis;
       
       if (risk_level === 'LOW') stats.safe_transactions++;
       if (risk_level === 'MODERATE') stats.needs_review++;
       if (risk_level === 'HIGH' || risk_level === 'CRITICAL') stats.high_risk++;
-      if (recommendation === 'BLOCK') stats.blocked_transactions++;
+      // For blocked transactions, we'll count HIGH and CRITICAL as blocked since they should be blocked
+      if (risk_level === 'HIGH' || risk_level === 'CRITICAL') stats.blocked_transactions++;
     });
 
     return stats;
@@ -133,13 +134,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         const riskLevelMap = {
           good: 'LOW',
           moderate: 'MODERATE',
-          bad: 'CRITICAL',
+          bad: 'HIGH',
           critical: 'CRITICAL',
         };
         
         const risk_level = riskLevelMap[result.score_label as keyof typeof riskLevelMap] || 'MODERATE';
 
         return {
+          id: `tx_${i}`,
           original_data: {
             account_id: result.account_number,
             user_id: result.user_id,
@@ -154,39 +156,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             purpose: result.reason_of_opening_account,
             sender_account_verified: true,
           },
-          encrypted_data: {
-            encrypted_data: 'mock_encrypted_data',
-            transaction_hash: 'mock_tx_hash',
-            hmac: 'mock_hmac',
-            encryption_method: 'AES-256-GCM',
-            timestamp: Date.now(),
-            nonce: 'mock_nonce',
-          },
-          blockchain_tx: {
-            tx_hash: `0xmock_tx_hash_${i}`,
-            block_number: 1,
-            from_address: '0xmock_from',
-            to_address: '0xmock_to',
-            gas_used: 21000,
-            gas_price: 50,
-            status: 'confirmed',
-            timestamp: Date.now(),
-            data_hash: 'mock_data_hash',
-            merkle_leaf: 'mock_merkle_leaf',
-            chain_id: 1,
-            nonce: 'mock_nonce',
-          },
           risk_analysis: {
-            cibyl_score: 0,
             risk_level: risk_level,
-            risk_factors: [result.score_label],
-            recommendation: risk_level === 'CRITICAL' ? 'BLOCK' : (risk_level === 'MODERATE' ? 'REVIEW' : 'APPROVE'),
-            confidence: 0.95,
-            security_checks: [],
+            score_label: result.score_label,
           },
-          processed_at: new Date().toISOString(),
-          security_session: sessionKey,
-        } as ProcessedTransaction;
+        } as unknown as ProcessedTransaction;
       });
 
       // Create DisplayTransaction objects for the table
@@ -194,7 +168,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         const riskLevelMap = {
           good: 'LOW',
           moderate: 'MODERATE',
-          bad: 'CRITICAL',
+          bad: 'HIGH',
+          critical: 'CRITICAL',
         };
         
         const risk_level = riskLevelMap[result.score_label as keyof typeof riskLevelMap] || 'MODERATE';
@@ -234,21 +209,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       User_ID: t.original_data.user_id,
       Account_Holder_Name: t.original_data.account_holder_name || 'N/A',
       Transaction_Amount: t.original_data.transaction_amount,
-      CIBYL_Score: t.risk_analysis.cibyl_score,
       Risk_Level: t.risk_analysis.risk_level,
-      Recommendation: t.risk_analysis.recommendation,
-      Risk_Factors: t.risk_analysis.risk_factors.join('; '),
-      Security_Checks: t.risk_analysis.security_checks.join('; '),
-      Confidence_Level: t.risk_analysis.confidence,
-      Blockchain_TX_Hash: t.blockchain_tx.tx_hash,
-      Block_Number: t.blockchain_tx.block_number,
-      Merkle_Leaf: t.blockchain_tx.merkle_leaf,
-      Processed_Timestamp: t.processed_at,
+      Score_Label: t.risk_analysis.score_label,
       Sender_Country: t.original_data.sender_country,
       Recipient_Country: t.original_data.recipient_country,
       Transaction_Type: t.original_data.transaction_type,
       Purpose: t.original_data.purpose,
-      Session_ID: t.security_session.substring(0, 8) + '...'
     }));
 
     const csv = [
