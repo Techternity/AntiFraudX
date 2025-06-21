@@ -25,6 +25,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Define base directory (directory of app.py)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# Debug: Print environment details
+print(f"Current working directory: {os.getcwd()}")
+print(f"Base directory: {BASE_DIR}")
+print(f"Files in backend directory: {os.listdir(BASE_DIR)}")
+
 # Load model and preprocessors
 try:
     model = joblib.load(os.path.join(BASE_DIR, "fraud_model.pkl"))
