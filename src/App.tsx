@@ -87,14 +87,14 @@ function App() {
     }
 
     // Default landing page
-    return (      <div className="min-h-screen bg-gray-900 text-gray-100 flex flex-col relative overflow-hidden">
-        {/* Animated Grid Background */}
-        <div className="absolute inset-0 z-0 grid-background opacity-20"></div>
-        <div className="absolute inset-0 z-0 bg-gradient-to-br from-blue-900 via-transparent to-indigo-900 opacity-20"></div>
+    return (
+      <div className="min-h-screen bg-gray-900 text-gray-100 flex flex-col relative overflow-hidden">        {/* Animated Grid Background */}
+        <div className="absolute inset-0 z-0 grid-background opacity-20 pointer-events-none"></div>
+        <div className="absolute inset-0 z-0 bg-gradient-to-br from-blue-900 via-transparent to-indigo-900 opacity-20 pointer-events-none"></div>
         {/* Animated Floating Elements */}
-        <div className="absolute top-20 left-20 w-24 h-24 rounded-full bg-blue-600 opacity-10 animate-float-slow"></div>
-        <div className="absolute bottom-40 right-20 w-32 h-32 rounded-full bg-indigo-600 opacity-10 animate-float-medium"></div>
-        <div className="absolute top-60 right-60 w-16 h-16 rounded-full bg-purple-600 opacity-10 animate-float-fast"></div>
+        <div className="absolute top-20 left-20 w-24 h-24 rounded-full bg-blue-600 opacity-10 animate-float-slow pointer-events-none"></div>
+        <div className="absolute bottom-40 right-20 w-32 h-32 rounded-full bg-indigo-600 opacity-10 animate-float-medium pointer-events-none"></div>
+        <div className="absolute top-60 right-60 w-16 h-16 rounded-full bg-purple-600 opacity-10 animate-float-fast pointer-events-none"></div>
         
         <style jsx>{`
           @keyframes float-slow {
@@ -123,8 +123,7 @@ function App() {
                               linear-gradient(rgba(99, 102, 241, 0.15) 1px, transparent 1px);
             background-size: 40px 40px;
           }
-        `}</style>{/* Navigation Bar */}
-        <nav className="bg-gradient-to-r from-indigo-800 to-blue-700 shadow-xl">
+        `}</style>{/* Navigation Bar */}        <nav className="bg-gradient-to-r from-indigo-800 to-blue-700 shadow-xl relative z-50">
           <div className="container mx-auto px-6 py-4">
             <div className="flex justify-between items-center">
               <div className="flex items-center">
@@ -136,18 +135,27 @@ function App() {
                   <p className="text-xs text-indigo-200">Government Authorized Financial Security System</p>
                 </div>
               </div>
-              <div className="hidden md:flex items-center space-x-1">                <a href="/" className="px-3 py-2 text-white hover:bg-indigo-600 hover:text-white rounded-md transition duration-300">
+              <div className="hidden md:flex items-center space-x-1">
+                <a href="/" className="px-3 py-2 text-white hover:bg-indigo-600 hover:text-white rounded-md transition duration-300 relative z-50">
                   Home
                 </a>
-                <a href="/about" className="px-3 py-2 text-white hover:bg-indigo-600 hover:text-white rounded-md transition duration-300">
+                <a href="/about" className="px-3 py-2 text-white hover:bg-indigo-600 hover:text-white rounded-md transition duration-300 relative z-50">
                   About
                 </a>
-                <a href="/contact" className="px-3 py-2 text-white hover:bg-indigo-600 hover:text-white rounded-md transition duration-300">
+                <a href="/contact" className="px-3 py-2 text-white hover:bg-indigo-600 hover:text-white rounded-md transition duration-300 relative z-50">
                   Contact
                 </a>
                 <button 
-                  onClick={() => currentUser ? setShowSolution(true) : setShowLoginForm(true)}
-                  className="ml-4 bg-white text-indigo-700 px-5 py-2 rounded-md hover:bg-indigo-100 shadow-md font-medium transition duration-300 flex items-center"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (currentUser) {
+                      setShowSolution(true);
+                    } else {
+                      setShowLoginForm(true);
+                      console.log("Login button clicked, showing login form");
+                    }
+                  }}
+                  className="ml-4 bg-white text-indigo-700 px-5 py-2 rounded-md hover:bg-indigo-100 shadow-md font-medium transition duration-300 flex items-center cursor-pointer relative z-50"
                 >
                   <User className="mr-2" size={16} />
                   {currentUser ? 'Dashboard' : 'Login'}
@@ -204,11 +212,18 @@ function App() {
                   </div>
                 </div>
               </div>
-              
-              <div className="mt-10 text-center">
+                <div className="mt-10 text-center">
                 <button
-                  onClick={() => currentUser ? setShowSolution(true) : setShowLoginForm(true)}
-                  className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:from-indigo-700 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (currentUser) {
+                      setShowSolution(true);
+                    } else {
+                      setShowLoginForm(true);
+                      console.log("Get Started button clicked, showing login form");
+                    }
+                  }}
+                  className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:from-indigo-700 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl relative z-10 cursor-pointer"
                 >
                   Get Started Now → 
                 </button>
