@@ -92,9 +92,8 @@ function App() {
         {/* Navigation Bar */}
         <nav className="bg-white shadow-lg">
           <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-            <div className="flex items-center">
-              <Shield className="text-indigo-600 mr-2" size={32} />
-              <h1 className="text-2xl font-bold text-gray-800">RBI SecureTrust</h1>
+            <div className="flex items-center">              <Shield className="text-indigo-600 mr-2" size={32} />
+              <h1 className="text-2xl font-bold text-gray-800">AntiFraudX</h1>
             </div>
             <div className="space-x-6">
               <a href="/" className="text-gray-600 hover:text-indigo-600 font-medium">Home</a>
@@ -113,13 +112,26 @@ function App() {
         {/* Main Content */}
         <main className="flex-grow container mx-auto px-6 py-12">
           {/* Hero Section */}
-          <section className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-800 mb-4">
-              SecureTrust: One-Stop Solution for Financial Security
+          <section className="text-center mb-16">            <h2 className="text-4xl font-bold text-gray-800 mb-4">
+              AntiFraudX: Advanced Payment Fraud Prevention
             </h2>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-              Empowering RBI, Banks, Cyber-Crime Branches, and Customers with our advanced Trust Score system to protect India's financial ecosystem.
+              Protecting Banks with AI-Powered Trust Scores and Blockchain Verification to Secure Financial Transactions
             </p>
+            <div className="flex justify-center mt-6 space-x-4">
+              <div className="flex items-center px-4 py-2 bg-blue-50 rounded-lg border border-blue-100">
+                <Shield className="text-blue-500 mr-2" size={20} />
+                <span className="text-blue-700 font-medium">Blockchain Secured</span>
+              </div>
+              <div className="flex items-center px-4 py-2 bg-green-50 rounded-lg border border-green-100">
+                <CheckCircle className="text-green-500 mr-2" size={20} />
+                <span className="text-green-700 font-medium">AI Powered</span>
+              </div>
+              <div className="flex items-center px-4 py-2 bg-purple-50 rounded-lg border border-purple-100">
+                <AlertTriangle className="text-purple-500 mr-2" size={20} />
+                <span className="text-purple-700 font-medium">Real-time Protection</span>
+              </div>
+            </div>
           </section>
 
           {/* Trust Score Explanation */}
@@ -249,10 +261,9 @@ function App() {
           </section>
 
           {/* Call to Action */}
-          <section className="text-center bg-indigo-600 text-white rounded-lg p-12">
-            <h3 className="text-3xl font-bold mb-4">Join SecureTrust Today</h3>
+          <section className="text-center bg-indigo-600 text-white rounded-lg p-12">            <h3 className="text-3xl font-bold mb-4">Join AntiFraudX Today</h3>
             <p className="text-lg mb-6 max-w-2xl mx-auto">
-              Protect India's financial future with our comprehensive Trust Score solution. Connect with us to learn how SecureTrust can safeguard your stakeholders.
+              Elevate your bank's fraud detection capabilities with our blockchain-secured, AI-powered Trust Score platform. Get started with a personalized demo.
             </p>
             <button 
               className="bg-white text-indigo-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100"
@@ -266,10 +277,9 @@ function App() {
         {/* Footer */}        <footer className="bg-gray-800 text-white py-8">
           <div className="container mx-auto px-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div>
-                <h4 className="text-lg font-semibold mb-4">About SecureTrust</h4>
+              <div>                <h4 className="text-lg font-semibold mb-4">About AntiFraudX</h4>
                 <p className="text-gray-400">
-                  A revolutionary platform by RBI to ensure financial security through advanced Trust Score analytics.
+                  A revolutionary platform for banks to prevent payment fraud through blockchain-secured Trust Scores and AI-powered analytics.
                 </p>
               </div>
               <div>
