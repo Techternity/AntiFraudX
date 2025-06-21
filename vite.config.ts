@@ -5,7 +5,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     host: '0.0.0.0',
-    port: 5173, // Or whatever port Render expects
+    port: 8080, // Or whatever port Render expects
     allowedHosts: ['antifraudx-1.onrender.com']
   }
 })
