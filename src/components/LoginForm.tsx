@@ -109,24 +109,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
             </div>
           )}
           
-          <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded-md backdrop-blur-sm">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <User className="h-5 w-5 text-blue-500" />
-              </div>
-              <div className="ml-3">                <p className="text-sm text-blue-700">
-                  <strong>Demo User</strong>: bank.manager@example.com
-                </p>
-                <p className="text-sm text-blue-700">
-                  <strong>Password</strong>: demo123
-                </p>
-                <p className="text-sm text-blue-700">
-                  <strong>Role</strong>: Bank Manager
-                </p>
-              </div>
-            </div>
-          </div>
-            <form className="space-y-6" onSubmit={handleSubmit}>            <div>
+          <form className="space-y-6" onSubmit={handleSubmit}>            <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 Email address
               </label>
