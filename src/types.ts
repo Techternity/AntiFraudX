@@ -24,6 +24,9 @@ export interface DisplayTransaction {
 }
 
 export interface RawTransaction {
+  ifsc_code: string;
+  branch_code: string;
+  bank_code: string;
   account_id: string;
   user_id: string;
   account_holder_name?: string;  

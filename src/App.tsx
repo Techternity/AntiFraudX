@@ -10,7 +10,7 @@ function App() {
   const [currentUser, setCurrentUser] = useState<BankUser | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Check for existing user session in localStorage when the app loads
+  // Check for existing user session in localStorage when the app loads AND
   useEffect(() => {
     console.log("App initialization useEffect running");
     const savedUser = localStorage.getItem('currentUser');
@@ -123,6 +123,9 @@ function App() {
                               linear-gradient(rgba(99, 102, 241, 0.15) 1px, transparent 1px);
             background-size: 40px 40px;
           }
+          .shadow-glow {
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
+          }
         `}</style>{/* Navigation Bar */}        <nav className="bg-gradient-to-r from-indigo-800 to-blue-700 shadow-xl relative z-50">
           <div className="container mx-auto px-6 py-4">
             <div className="flex justify-between items-center">
@@ -227,9 +230,202 @@ function App() {
                 >
                   Get Started Now → 
                 </button>
-              </div>
+              </div>            </div>          </section>
+            {/* Marquee Banner */}          <section className="relative mb-12 mt-6 overflow-hidden py-1 bg-gradient-to-r from-indigo-900 to-blue-900">            <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\'40\' height=\'40\' viewBox=\'0 0 40 40\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'%234338ca\' fill-opacity=\'0.15\' fill-rule=\'evenodd\'%3E%3Cpath d=\'M0 20L20 0L40 20L20 40z\'/%3E%3C/g%3E%3C/svg%3E')] opacity-20"></div>
+            
+            <div className="marquee-container relative overflow-hidden h-16">
+              <style jsx>{`
+                @keyframes marquee {
+                  0% { transform: translateX(0); }
+                  100% { transform: translateX(-50%); }
+                }
+                .marquee-content {
+                  display: flex;
+                  white-space: nowrap;
+                  height: 100%;
+                }
+                .animate-marquee {
+                  animation: marquee 30s linear infinite;
+                }
+              `}</style>
+                <div className="marquee-content flex items-center h-full">
+                  <div className="flex items-center h-full animate-marquee">
+                    {/* First segment */}
+                    <div className="flex items-center h-full">
+                      {/* Hack4Bengal Logo */}
+                      <div className="bg-white/95 rounded-full h-12 w-12 flex items-center justify-center shadow-glow mr-3">
+                        <img src="/assets/hack4bengal-logo.png" alt="Hack4Bengal" className="w-9 h-9 object-contain" 
+                           onError={(e) => {
+                             e.currentTarget.onerror = null;
+                             e.currentTarget.src = '';
+                             if (e.currentTarget.parentElement) {
+                               e.currentTarget.parentElement.innerHTML = 'H4B';
+                             }
+                           }} 
+                        />
+                      </div>
+                      
+                      <span className="text-white font-bold text-lg tracking-wider">
+                        BUILT AT HACK4BENGAL 2025 HACKATHON
+                      </span>
+                      
+                      <span className="text-indigo-300 px-4 mx-4">•</span>
+                    </div>
+                    
+                    {/* Second segment */}
+                    <div className="flex items-center h-full">
+                      <div className="bg-white/95 rounded-full h-12 w-12 flex items-center justify-center shadow-glow mr-3">
+                        <img src="/assets/india-govt-logo.png" alt="Government of India" className="w-9 h-9 object-contain"
+                           onError={(e) => {
+                             e.currentTarget.onerror = null;
+                             e.currentTarget.src = '';
+                             if (e.currentTarget.parentElement) {
+                               e.currentTarget.parentElement.innerHTML = 'GOI';
+                             }
+                           }}
+                        />
+                      </div>
+                      
+                      <span className="text-white font-bold text-lg tracking-wider">
+                        EXCLUSIVELY FOR GOVERNMENT OF INDIA
+                      </span>
+                      
+                      <span className="text-indigo-300 px-4 mx-4">•</span>
+                    </div>
+                    
+                    {/* Third segment */}
+                    <div className="flex items-center h-full">
+                      <div className="bg-white/95 rounded-full h-12 w-12 flex items-center justify-center shadow-glow mr-3">
+                        <img src="/assets/financial-logo.png" alt="Financial Institutions" className="w-9 h-9 object-contain"
+                           onError={(e) => {
+                             e.currentTarget.onerror = null;
+                             e.currentTarget.src = '';
+                             if (e.currentTarget.parentElement) {
+                               e.currentTarget.parentElement.innerHTML = 'FI';
+                             }
+                           }}
+                        />
+                      </div>
+                      
+                      <span className="text-white font-bold text-lg">
+                        (FINANCIAL INSTITUTIONS) TO PREVENT FINANCIAL FRAUDS
+                      </span>
+                      
+                      <span className="text-indigo-300 px-4 mx-4">•</span>
+                    </div>
+                    
+                    {/* Fourth segment */}
+                    <div className="flex items-center h-full">
+                      <div className="bg-white/95 rounded-full h-12 w-12 flex items-center justify-center shadow-glow mr-3">
+                        <img src="/assets/digital-india-logo.png" alt="Digital India" className="w-9 h-9 object-contain"
+                           onError={(e) => {
+                             e.currentTarget.onerror = null;
+                             e.currentTarget.src = '';
+                             if (e.currentTarget.parentElement) {
+                               e.currentTarget.parentElement.innerHTML = 'DI';
+                             }
+                           }}
+                        />
+                      </div>
+                      
+                      <span className="text-white font-bold text-xl tracking-wider">
+                        DIGITAL INDIA
+                      </span>
+                      
+                      <span className="text-indigo-300 px-4 mx-4">•</span>
+                    </div>
+                    
+                    {/* Repeat for continuous effect */}
+                    {/* First segment (duplicate) */}
+                    <div className="flex items-center h-full">
+                      {/* Hack4Bengal Logo */}
+                      <div className="bg-white/95 rounded-full h-12 w-12 flex items-center justify-center shadow-glow mr-3">
+                        <img src="/assets/hack4bengal-logo.png" alt="Hack4Bengal" className="w-9 h-9 object-contain" 
+                           onError={(e) => {
+                             e.currentTarget.onerror = null;
+                             e.currentTarget.src = '';
+                             if (e.currentTarget.parentElement) {
+                               e.currentTarget.parentElement.innerHTML = 'H4B';
+                             }
+                           }} 
+                        />
+                      </div>
+                      
+                      <span className="text-white font-bold text-lg tracking-wider">
+                        BUILT AT HACK4BENGAL 2025 HACKATHON
+                      </span>
+                      
+                      <span className="text-indigo-300 px-4 mx-4">•</span>
+                    </div>
+                    
+                    {/* Second segment (duplicate) */}
+                    <div className="flex items-center h-full">
+                      <div className="bg-white/95 rounded-full h-12 w-12 flex items-center justify-center shadow-glow mr-3">
+                        <img src="/assets/india-govt-logo.png" alt="Government of India" className="w-9 h-9 object-contain"
+                           onError={(e) => {
+                             e.currentTarget.onerror = null;
+                             e.currentTarget.src = '';
+                             if (e.currentTarget.parentElement) {
+                               e.currentTarget.parentElement.innerHTML = 'GOI';
+                             }
+                           }}
+                        />
+                      </div>
+                      
+                      <span className="text-white font-bold text-lg tracking-wider">
+                        EXCLUSIVELY FOR GOVERNMENT OF INDIA
+                      </span>
+                      
+                      <span className="text-indigo-300 px-4 mx-4">•</span>
+                    </div>
+                    
+                    {/* Third segment (duplicate) */}
+                    <div className="flex items-center h-full">
+                      <div className="bg-white/95 rounded-full h-12 w-12 flex items-center justify-center shadow-glow mr-3">
+                        <img src="/assets/financial-logo.png" alt="Financial Institutions" className="w-9 h-9 object-contain"
+                           onError={(e) => {
+                             e.currentTarget.onerror = null;
+                             e.currentTarget.src = '';
+                             if (e.currentTarget.parentElement) {
+                               e.currentTarget.parentElement.innerHTML = 'FI';
+                             }
+                           }}
+                        />
+                      </div>
+                      
+                      <span className="text-white font-bold text-lg">
+                        (FINANCIAL INSTITUTIONS) TO PREVENT FINANCIAL FRAUDS
+                      </span>
+                      
+                      <span className="text-indigo-300 px-4 mx-4">•</span>
+                    </div>
+                    
+                    {/* Fourth segment (duplicate) */}
+                    <div className="flex items-center h-full">
+                      <div className="bg-white/95 rounded-full h-12 w-12 flex items-center justify-center shadow-glow mr-3">
+                        <img src="/assets/digital-india-logo.png" alt="Digital India" className="w-9 h-9 object-contain"
+                           onError={(e) => {
+                             e.currentTarget.onerror = null;
+                             e.currentTarget.src = '';
+                             if (e.currentTarget.parentElement) {
+                               e.currentTarget.parentElement.innerHTML = 'DI';
+                             }
+                           }}
+                        />
+                      </div>
+                      
+                      <span className="text-white font-bold text-xl tracking-wider">
+                        DIGITAL INDIA
+                      </span>
+                      
+                      <span className="text-indigo-300 px-4 mx-4">•</span>
+                    </div>
+                  </div>
+                </div>
             </div>
-          </section>          {/* Trust Score Explanation */}          <section className="mb-16 relative overflow-hidden">
+          </section>
+          
+          {/* Trust Score Explanation */}          <section className="mb-16 relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-gray-800 to-slate-900 rounded-xl"></div>
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-900/40 via-transparent to-transparent"></div>
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-indigo-500 to-transparent"></div>
@@ -517,14 +713,14 @@ function App() {
                 </ul>
               </div>
               <div>
-                <h4 className="text-lg font-semibold mb-4">Contact Us</h4>                <p className="text-gray-400 mb-2">Email: contact@antifraudx.gov.in</p>
-                <p className="text-gray-400 mb-2">Phone: +91 11-2304-5678</p>
-                <p className="text-gray-400">New Delhi, India</p>
+                <h4 className="text-lg font-semibold mb-4">Contact Us</h4>                <p className="text-gray-400 mb-2">Email: contact@techternity.in</p>
+                <p className="text-gray-400 mb-2">Phone: +91 7501005155</p>
+                <p className="text-gray-400">Kolkata, India</p>
               </div>
             </div>
             <div className="mt-8 border-t border-gray-700 pt-8 flex flex-col md:flex-row justify-between items-center">
               <p className="text-sm text-gray-400 mb-4 md:mb-0">
-                © 2024 AntiFraudX. An official GOI initiative. All rights reserved.
+                © 2025 AntiFraudX. An Techternity initiative. All rights reserved.
               </p>
               <div className="flex space-x-4">                <a href="#" className="text-gray-400 hover:text-white">
                   Facebook

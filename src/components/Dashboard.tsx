@@ -18,7 +18,7 @@ import { StatsCards } from './StatsCards';
 import { TransactionTable } from './TransactionTable';
 import { BankUser, ProcessedTransaction, SecurityStats, DisplayTransaction } from '../types';
 import { generateSessionKey, parseCSV, processTransaction } from '../utils/mockSecurity';
-
+//HEAL
 interface DashboardProps {
   user: BankUser | null;
   onLogout: () => void;
@@ -672,7 +672,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                           Download Full Report
                         </button>
                         <button className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-50 transition-colors">
-                          Download Risk Summary
+                          Download Risk Summary 
                         </button>
                       </div>
                     </div>
@@ -682,7 +682,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             </div>
           )}
         </div>
-      </div>
+      </div> 
     </div>
   );
 };
