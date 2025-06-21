@@ -10,17 +10,21 @@ export interface Transaction {
   transaction_type: string;
   purpose: string;
   sender_account_verified: boolean;
-  account_holder_name?: string;
-  bank_code?: string;
-  branch_code?: string;
-  ifsc_code?: string;
+  account_holder_name: string; // Made required for report generation
+  bank_code?: string; // Optional, e.g., "SBIN" for State Bank of India
+  branch_code?: string; // Optional, e.g., "000123"
+  ifsc_code?: string; // Optional, e.g., "SBIN0000123"
+}
+
+export interface RawTransaction {
+  [key: string]: string | number | boolean | undefined; // Flexible type for CSV parsing
 }
 
 export interface RiskAnalysis {
   cibyl_score: number;
-  risk_level: 'CRITICAL' | 'HIGH' | 'MODERATE' | 'LOW';
+  risk_level: 'LOW' | 'MODERATE' | 'HIGH' | 'CRITICAL';
   risk_factors: string[];
-  recommendation: 'BLOCK' | 'QUARANTINE' | 'REVIEW' | 'APPROVE';
+  recommendation: 'APPROVE' | 'REVIEW' | 'BLOCK' | 'QUARANTINE';
   confidence: number;
   security_checks: string[];
 }
@@ -68,10 +72,10 @@ export interface ProcessingStep {
 
 export interface SecurityStats {
   total_transactions: number;
-  safe_transactions: number;
-  needs_review: number;
-  high_risk: number;
-  blocked_transactions: number;
+  safe_transactions: number; // risk_level: LOW
+  needs_review: number; // risk_level: MODERATE
+  high_risk: number; // risk_level: HIGH or CRITICAL
+  blocked_transactions: number; // recommendation: BLOCK or QUARANTINE
 }
 
 export interface BankUser {
@@ -116,4 +120,11 @@ export interface AlertConfig {
   threshold: number;
   enabled: boolean;
   notification_channels: string[];
+}
+
+export interface ServerResult {
+  // Define the properties of ServerResult
+  success: boolean;
+  message: string;
+  data?: any; // Adjust the type as necessary
 }
