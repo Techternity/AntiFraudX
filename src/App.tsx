@@ -1,417 +1,318 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Shield, CheckCircle, AlertTriangle, FileText, Send, Building2, X } from 'lucide-react';
-import { FileUploader } from './components/FileUploader';
-import { ProcessingAnimation } from './components/ProcessingAnimation';
-import { StatsCards } from './components/StatsCards';
-import { TransactionTable } from './components/TransactionTable';
+import React, { useEffect, useState } from 'react';
+import { Shield, CheckCircle, AlertTriangle, User, Building2, Siren, CreditCard } from 'lucide-react';
 import { LoginForm } from './components/LoginForm';
-import { BankDashboard } from './components/BankDashboard';
-import { 
-  generateSessionKey, 
-  parseCSV, 
-  processTransaction 
-} from './utils/mockSecurity';
-import { ProcessedTransaction, SecurityStats, BankUser } from './types';
+import { Dashboard } from './components/Dashboard';
+import { BankUser } from './types';
 
 function App() {
-  const [currentView, setCurrentView] = useState<'rbi' | 'bank'>('rbi');
-  const [bankUser, setBankUser] = useState<BankUser | null>(null);
-  const [sessionKey, setSessionKey] = useState<string>('');
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [currentStep, setCurrentStep] = useState(0);
-  const [processedTransactions, setProcessedTransactions] = useState<ProcessedTransaction[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [lastActivity, setLastActivity] = useState(Date.now());
+  const [showSolution, setShowSolution] = useState(false);
+  const [showLoginForm, setShowLoginForm] = useState(false);
+  const [currentUser, setCurrentUser] = useState<BankUser | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  // Initialize session
+  // Check for existing user session in localStorage when the app loads
   useEffect(() => {
-    setSessionKey(generateSessionKey());
-  }, []);
-
-  // Session timeout (15 minutes)
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (Date.now() - lastActivity > 900000) { // 15 minutes
-        handleTerminateSession();
+    console.log("App initialization useEffect running");
+    const savedUser = localStorage.getItem('currentUser');
+    if (savedUser) {
+      try {
+        const user = JSON.parse(savedUser);
+        console.log("Found saved user:", user);
+        setCurrentUser(user);
+        setShowSolution(true);
+      } catch (error) {
+        console.error("Failed to parse saved user:", error);
+        localStorage.removeItem('currentUser');
       }
-    }, 60000); // Check every minute
-
-    return () => clearInterval(interval);
-  }, [lastActivity]);
-
-  const updateActivity = useCallback(() => {
-    setLastActivity(Date.now());
+    }
+    setIsInitialized(true);
+    console.log("App initialized");
   }, []);
 
-  const calculateStats = (transactions: ProcessedTransaction[]): SecurityStats => {
-    const stats: SecurityStats = {
-      total_transactions: transactions.length,
-      safe_transactions: 0,
-      needs_review: 0,
-      high_risk: 0,
-      blocked_transactions: 0
-    };
+  // Handle state updates that should happen after render
+  useEffect(() => {
+    if (isInitialized && showSolution && !currentUser) {
+      console.log("Redirecting to login form because showSolution=true but no user");
+      setShowLoginForm(true);
+      setShowSolution(false);
+    }
+  }, [showSolution, currentUser, isInitialized]);
 
-    transactions.forEach(t => {
-      const { risk_level, recommendation } = t.risk_analysis;
-      
-      if (risk_level === 'LOW') stats.safe_transactions++;
-      if (risk_level === 'MODERATE') stats.needs_review++;
-      if (risk_level === 'HIGH' || risk_level === 'CRITICAL') stats.high_risk++;
-      if (recommendation === 'BLOCK') stats.blocked_transactions++;
+  const handleLogin = (user: any) => {
+    console.log("Login handler called with user:", user);
+    // Ensure user has all required properties
+    const completeUser: BankUser = {
+      id: user.id || '',
+      name: user.name || '',
+      email: user.email || '',
+      bankName: user.bankName || '',
+      role: user.role || 'VIEWER',
+      accessLevel: user.accessLevel || ''
+    };
+    
+    setCurrentUser(completeUser);
+    // Save user to localStorage for persistence
+    localStorage.setItem('currentUser', JSON.stringify(completeUser));
+    setShowLoginForm(false);
+    setShowSolution(true); // Navigate to full RBI System page after successful login
+    console.log("User logged in, showSolution set to true");
+  };
+
+  const handleLogout = () => {
+    console.log("Logout handler called");
+    setCurrentUser(null);
+    localStorage.removeItem('currentUser');
+    setShowSolution(false);
+    setShowLoginForm(false);
+  };
+
+  // Determine what to render
+  const renderContent = () => {
+    console.log("Rendering content with states:", { 
+      showLoginForm, 
+      showSolution, 
+      hasUser: !!currentUser 
     });
 
-    return stats;
-  };
-
-  const handleFileUpload = async (file: File) => {
-    updateActivity();
-    setError(null);
-    setIsProcessing(true);
-    setCurrentStep(0);
-    setProcessedTransactions([]);
-
-    try {
-      // Step 1: Read file
-      const content = await file.text();
-      setCurrentStep(1);
-      await new Promise(resolve => setTimeout(resolve, 800));
-
-      // Step 2: Parse CSV
-      const transactions = parseCSV(content);
-      if (transactions.length === 0) {
-        throw new Error('No valid transactions found in CSV');
-      }
-      if (transactions.length > 10000) {
-        throw new Error('Too many transactions (max 10000)');
-      }
-      setCurrentStep(2);
-      await new Promise(resolve => setTimeout(resolve, 800));
-
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const response = await fetch('http://127.0.0.1:8000/', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Prediction server failed');
-      }
-
-      const results: { user_id: string; score_label: string }[] = await response.json();
-
-      // We need to map the results from the python backend to the ProcessedTransaction type
-      // that the rest of the application expects.
-      const processed = results.map((result, i) => {
-        // Find the original transaction data to get other fields
-        const originalTx = transactions.find(t => t.user_id === result.user_id);
-
-        const riskLevelMap = {
-          good: 'LOW',
-          moderate: 'MODERATE',
-          bad: 'CRITICAL',
-        };
-        
-        const risk_level = riskLevelMap[result.score_label as keyof typeof riskLevelMap] || 'MODERATE';
-
-        // We are creating a mock ProcessedTransaction object.
-        // Some data will be mocked or set to default values.
-        return {
-          original_data: originalTx || {
-            account_id: `ACC${i}`,
-            user_id: result.user_id,
-            transaction_amount: 0,
-            recipient_account: 'N/A',
-            sender_country: 'N/A',
-            recipient_country: 'N/A',
-            account_age_days: 0,
-            previous_failed_transactions: 0,
-            transaction_type: 'N/A',
-            purpose: 'N/A',
-            sender_account_verified: false,
-          },
-          encrypted_data: {
-            encrypted_data: 'mock_encrypted_data',
-            transaction_hash: 'mock_tx_hash',
-            hmac: 'mock_hmac',
-            encryption_method: 'AES-256-GCM',
-            timestamp: Date.now(),
-            nonce: 'mock_nonce',
-          },
-          blockchain_tx: {
-            tx_hash: `0xmock_tx_hash_${i}`,
-            block_number: 1,
-            from_address: '0xmock_from',
-            to_address: '0xmock_to',
-            gas_used: 21000,
-            gas_price: 50,
-            status: 'confirmed',
-            timestamp: Date.now(),
-            data_hash: 'mock_data_hash',
-            merkle_leaf: 'mock_merkle_leaf',
-            chain_id: 1,
-            nonce: 'mock_nonce',
-          },
-          risk_analysis: {
-            cibyl_score: 0, // The new model does not provide a score, just a label.
-            risk_level: risk_level,
-            risk_factors: [result.score_label],
-            recommendation: risk_level === 'CRITICAL' ? 'BLOCK' : (risk_level === 'MODERATE' ? 'REVIEW' : 'APPROVE'),
-            confidence: 0.95,
-            security_checks: [],
-          },
-          processed_at: new Date().toISOString(),
-          security_session: sessionKey,
-        } as ProcessedTransaction;
-      });
-
-      setCurrentStep(8);
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      setProcessedTransactions(processed);
-      setIsProcessing(false);
-
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Processing failed');
-      setIsProcessing(false);
+    if (showLoginForm) {
+      return <LoginForm onLogin={handleLogin} />;
     }
-  };
 
-  const handleDownloadReport = () => {
-    updateActivity();
-    const reportData = processedTransactions.map(t => ({
-      Account_ID: t.original_data.account_id,
-      User_ID: t.original_data.user_id,
-      Account_Holder_Name: t.original_data.account_holder_name || 'N/A',
-      Transaction_Amount: t.original_data.transaction_amount,
-      CIBYL_Score: t.risk_analysis.cibyl_score,
-      Risk_Level: t.risk_analysis.risk_level,
-      Recommendation: t.risk_analysis.recommendation,
-      Risk_Factors: t.risk_analysis.risk_factors.join('; '),
-      Security_Checks: t.risk_analysis.security_checks.join('; '),
-      Confidence_Level: t.risk_analysis.confidence,
-      Blockchain_TX_Hash: t.blockchain_tx.tx_hash,
-      Block_Number: t.blockchain_tx.block_number,
-      Merkle_Leaf: t.blockchain_tx.merkle_leaf,
-      Processed_Timestamp: t.processed_at,
-      Sender_Country: t.original_data.sender_country,
-      Recipient_Country: t.original_data.recipient_country,
-      Transaction_Type: t.original_data.transaction_type,
-      Purpose: t.original_data.purpose,
-      Session_ID: t.security_session.substring(0, 8) + '...'
-    }));
-
-    const csv = [
-      Object.keys(reportData[0]).join(','),
-      ...reportData.map(row => Object.values(row).join(','))
-    ].join('\n');
-
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `RBI_Security_Report_${new Date().toISOString().split('T')[0]}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
-
-  const handleTerminateSession = () => {
-    setSessionKey(generateSessionKey());
-    setProcessedTransactions([]);
-    setError(null);
-    setIsProcessing(false);
-    setCurrentStep(0);
-    setLastActivity(Date.now());
-  };
-
-  const handleBankLogin = (user: BankUser) => {
-    setBankUser(user);
-    setCurrentView('bank');
-    updateActivity();
-  };
-
-  const handleBankLogout = () => {
-    setBankUser(null);
-    setCurrentView('rbi');
-    updateActivity();
-  };
-
-  const stats = processedTransactions.length > 0 ? calculateStats(processedTransactions) : {
-    total_transactions: 0,
-    safe_transactions: 0,
-    needs_review: 0,
-    high_risk: 0,
-    blocked_transactions: 0
-  };
-
-  // Bank Dashboard View
-  if (currentView === 'bank') {
-    if (!bankUser) {
-      return <LoginForm onLogin={handleBankLogin} />;
+    if (showSolution && currentUser) {
+      return (
+        <div key="dashboard-container">
+          <Dashboard user={currentUser} onLogout={handleLogout} />
+        </div>
+      );
     }
+
+    // Default landing page
     return (
-      <BankDashboard 
-        user={bankUser} 
-        transactions={processedTransactions}
-        onLogout={handleBankLogout}
-      />
-    );
-  }
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        {/* Navigation Bar */}
+        <nav className="bg-white shadow-lg">
+          <div className="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div className="flex items-center">
+              <Shield className="text-indigo-600 mr-2" size={32} />
+              <h1 className="text-2xl font-bold text-gray-800">RBI SecureTrust</h1>
+            </div>
+            <div className="space-x-6">
+              <a href="/" className="text-gray-600 hover:text-indigo-600 font-medium">Home</a>
+              <a href="/about" className="text-gray-600 hover:text-indigo-600 font-medium">About</a>
+              <a href="/contact" className="text-gray-600 hover:text-indigo-600 font-medium">Contact</a>
+              <button 
+                onClick={() => currentUser ? setShowSolution(true) : setShowLoginForm(true)}
+                className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700"
+              >
+                {currentUser ? 'Dashboard' : 'Login'}
+              </button>
+            </div>
+          </div>
+        </nav>
 
-  // RBI Main System View
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto p-6">
-        {/* Header */}
-        <div className="bg-white shadow-lg rounded-lg p-6 mb-6">
-          <div className="text-center">
-            <h1 className="text-3xl font-bold text-gray-800 flex items-center justify-center">
-              <Shield className="mr-3 text-indigo-600" size={32} />
-              RBI - Secure Transaction Monitoring System
-            </h1>
-            <p className="text-lg text-gray-600 mt-2">
-              Military-Grade Transaction Security and Fraud Detection
+        {/* Main Content */}
+        <main className="flex-grow container mx-auto px-6 py-12">
+          {/* Hero Section */}
+          <section className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-gray-800 mb-4">
+              SecureTrust: One-Stop Solution for Financial Security
+            </h2>
+            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+              Empowering RBI, Banks, Cyber-Crime Branches, and Customers with our advanced Trust Score system to protect India's financial ecosystem.
             </p>
-            <p className="text-sm text-blue-600 font-semibold">
-              FIPS 140-2 Compliant | AES-256-GCM | Blockchain Verified
-            </p>
-          </div>
-          
-          {/* Navigation */}
-          <div className="flex justify-center mt-6 space-x-4">
-            <button
-              onClick={() => setCurrentView('rbi')}
-              className={`px-6 py-2 rounded-lg font-medium transition-colors ${
-                currentView === 'rbi' 
-                  ? 'bg-indigo-600 text-white' 
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              RBI System
-            </button>
-            <button
-              onClick={() => setCurrentView('bank')}
-              className={`px-6 py-2 rounded-lg font-medium transition-colors ${
-                currentView === 'bank' 
-                  ? 'bg-indigo-600 text-white' 
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              Bank Dashboard
-            </button>
-          </div>
-        </div>
+          </section>
 
-        {/* Session Info */}
-        <div className="bg-green-50 border-l-4 border-green-500 rounded-lg p-4 mb-6">
-          <div className="flex items-center justify-center">
-            <Shield className="mr-2 text-green-600" size={20} />
-            <span className="text-green-700 font-medium">
-              Secure Session: {sessionKey.substring(0, 8)}...
-            </span>
-          </div>
-        </div>
+          {/* Trust Score Explanation */}
+          <section className="mb-16">
+            <h3 className="text-3xl font-semibold text-gray-800 mb-8 text-center">
+              Understanding the Trust Score
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-white rounded-lg shadow-md p-6 text-center">
+                <AlertTriangle className="text-red-500 mx-auto mb-4" size={40} />
+                <h4 className="text-xl font-semibold text-gray-800 mb-2">Danger Zone (0-300)</h4>
+                <p className="text-gray-600">
+                  High-risk accounts with suspicious transaction patterns requiring immediate attention.
+                </p>
+              </div>
+              <div className="bg-white rounded-lg shadow-md p-6 text-center">
+                <AlertTriangle className="text-yellow-500 mx-auto mb-4" size={40} />
+                <h4 className="text-xl font-semibold text-gray-800 mb-2">Warning Zone (301-600)</h4>
+                <p className="text-gray-600">
+                  Moderate-risk accounts needing review to prevent potential fraud.
+                </p>
+              </div>
+              <div className="bg-white rounded-lg shadow-md p-6 text-center">
+                <CheckCircle className="text-green-500 mx-auto mb-4" size={40} />
+                <h4 className="text-xl font-semibold text-gray-800 mb-2">Good Zone (601-900)</h4>
+                <p className="text-gray-600">
+                  Low-risk accounts with trustworthy transaction histories.
+                </p>
+              </div>
+            </div>
+          </section>
 
-        {/* Stats Cards */}
-        <StatsCards stats={stats} />
-
-        {/* File Upload */}
-        <div className="mb-6">
-          <FileUploader 
-            onFileUpload={handleFileUpload} 
-            disabled={isProcessing}
-          />
-        </div>
-
-        {/* Processing Animation */}
-        {(isProcessing || error) && (
-          <div className="mb-6">
-            <ProcessingAnimation
-              currentStep={currentStep}
-              totalSteps={8}
-              isComplete={!isProcessing && !error}
-              error={error || undefined}
-            />
-          </div>
-        )}
-
-        {/* Results */}
-        {processedTransactions.length > 0 && (
-          <div className="mb-6">
-            {/* Security Status */}
-            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-              <h3 className="text-2xl font-bold text-gray-800 mb-4 flex items-center">
-                <FileText className="mr-2" />
-                Transaction Security Analysis
-              </h3>
-              
-              <div className="mb-4">
-                <h4 className="text-lg font-semibold text-gray-700 mb-2">Security Status</h4>
-                <div className="space-y-2">
-                  <div className="flex items-center text-green-700">
-                    <CheckCircle className="text-green-500 mr-2" size={16} />
-                    All transactions encrypted with AES-256-GCM
-                  </div>
-                  <div className="flex items-center text-blue-700">
-                    <Shield className="text-blue-500 mr-2" size={16} />
-                    HMAC-SHA256 integrity verification completed
-                  </div>
-                  <div className="flex items-center text-purple-700">
-                    <Shield className="text-purple-500 mr-2" size={16} />
-                    Blockchain Merkle tree verification completed
-                  </div>
-                  <div className="flex items-center text-indigo-700">
-                    <Shield className="text-indigo-500 mr-2" size={16} />
-                    Secure Session ID: {sessionKey.substring(0, 8)}...
-                  </div>
+          {/* Stakeholder Benefits */}
+          <section className="mb-16">
+            <h3 className="text-3xl font-semibold text-gray-800 mb-8 text-center">
+              Empowering Stakeholders
+            </h3>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Customers */}
+              <div className="bg-white rounded-lg shadow-md p-8 flex items-start">
+                <User className="text-indigo-600 mr-4" size={40} />
+                <div>
+                  <h4 className="text-xl font-semibold text-gray-800 mb-2">For Customers</h4>
+                  <ul className="text-gray-600 space-y-2">
+                    <li className="flex items-center">
+                      <CheckCircle className="text-green-500 mr-2" size={16} />
+                      View your Trust Score (0-900) to understand your financial standing.
+                    </li>
+                    <li className="flex items-center">
+                      <CheckCircle className="text-green-500 mr-2" size={16} />
+                      Check all linked accounts (savings, current, etc.) via PAN card.
+                    </li>
+                    <li className="flex items-center">
+                      <CheckCircle className="text-green-500 mr-2" size={16} />
+                      Monitor transaction patterns to stay informed and secure.
+                    </li>
+                  </ul>
                 </div>
               </div>
 
-              <div className="flex flex-wrap gap-4">
-                <button
-                  onClick={handleDownloadReport}
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-6 rounded-lg flex items-center"
-                >
-                  <FileText className="mr-2" size={16} />
-                  Download Security Report
-                </button>
-                <button className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-6 rounded-lg flex items-center">
-                  <Send className="mr-2" size={16} />
-                  Report to RBI
-                </button>
-                <button className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-lg flex items-center">
-                  <Building2 className="mr-2" size={16} />
-                  Notify Banks
-                </button>
+              {/* Banks */}
+              <div className="bg-white rounded-lg shadow-md p-8 flex items-start">
+                <Building2 className="text-indigo-600 mr-4" size={40} />
+                <div>
+                  <h4 className="text-xl font-semibold text-gray-800 mb-2">For Banks</h4>
+                  <ul className="text-gray-600 space-y-2">
+                    <li className="flex items-center">
+                      <CheckCircle className="text-green-500 mr-2" size={16} />
+                      Analyze customer transaction patterns to detect and prevent fraud.
+                    </li>
+                    <li className="flex items-center">
+                      <CheckCircle className="text-green-500 mr-2" size={16} />
+                      Use Trust Score insights to tailor product offerings.
+                    </li>
+                    <li className="flex items-center">
+                      <CheckCircle className="text-green-500 mr-2" size={16} />
+                      Enhance customer trust with transparent security measures.
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Cyber-Crime Branch */}
+              <div className="bg-white rounded-lg shadow-md p-8 flex items-start">
+                <Siren className="text-indigo-600 mr-4" size={40} />
+                <div>
+                  <h4 className="text-xl font-semibold text-gray-800 mb-2">For Cyber-Crime Branch</h4>
+                  <ul className="text-gray-600 space-y-2">
+                    <li className="flex items-center">
+                      <CheckCircle className="text-green-500 mr-2" size={16} />
+                      Identify high-risk accounts (Trust Score {'<'} 300) for immediate action.
+                    </li>
+                    <li className="flex items-center">
+                      <CheckCircle className="text-green-500 mr-2" size={16} />
+                      Freeze accounts based on complaints or suspicious activity.
+                    </li>
+                    <li className="flex items-center">
+                      <CheckCircle className="text-green-500 mr-2" size={16} />
+                      Streamline investigations with detailed transaction data.
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* RBI */}
+              <div className="bg-white rounded-lg shadow-md p-8 flex items-start">
+                <Shield className="text-indigo-600 mr-4" size={40} />
+                <div>
+                  <h4 className="text-xl font-semibold text-gray-800 mb-2">For RBI</h4>
+                  <ul className="text-gray-600 space-y-2">
+                    <li className="flex items-center">
+                      <CheckCircle className="text-green-500 mr-2" size={16} />
+                      Integrate banks, cyber-crime branches, and customers seamlessly.
+                    </li>
+                    <li className="flex items-center">
+                      <CheckCircle className="text-green-500 mr-2" size={16} />
+                      Monitor national financial security with Trust Score analytics.
+                    </li>
+                    <li className="flex items-center">
+                      <CheckCircle className="text-green-500 mr-2" size={16} />
+                      Enforce compliance with real-time fraud detection.
+                    </li>
+                  </ul>
+                </div>
               </div>
             </div>
+          </section>
 
-            {/* Transaction Table */}
-            <TransactionTable 
-              transactions={processedTransactions}
-              onDownloadReport={handleDownloadReport}
-            />
+          {/* Call to Action */}
+          <section className="text-center bg-indigo-600 text-white rounded-lg p-12">
+            <h3 className="text-3xl font-bold mb-4">Join SecureTrust Today</h3>
+            <p className="text-lg mb-6 max-w-2xl mx-auto">
+              Protect India's financial future with our comprehensive Trust Score solution. Connect with us to learn how SecureTrust can safeguard your stakeholders.
+            </p>
+            <button 
+              className="bg-white text-indigo-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100"
+              onClick={() => currentUser ? setShowSolution(true) : setShowLoginForm(true)}
+            >
+              See Demo
+            </button>
+          </section>
+        </main>
+
+        {/* Footer */}
+        <footer className="bg-gray-800 text-white py-8">
+          <div className="container mx-auto px-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div>
+                <h4 className="text-lg font-semibold mb-4">About SecureTrust</h4>
+                <p className="text-gray-400">
+                  A revolutionary platform by RBI to ensure financial security through advanced Trust Score analytics.
+                </p>
+              </div>
+              <div>
+                <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
+                <ul className="space-y-2">
+                  <li><a href="/about" className="text-gray-400 hover:text-white">About</a></li>
+                  <li><a href="/contact" className="text-gray-400 hover:text-white">Contact</a></li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="text-lg font-semibold mb-4">Contact Us</h4>
+                <p className="text-gray-400">Email: support@securetrust.in</p>
+                <p className="text-gray-400">Phone: +91 123 456 7890</p>
+              </div>
+            </div>
+            <div className="mt-8 text-center text-gray-400">
+              &copy; 2025 SecureTrust. All rights reserved.
+            </div>
           </div>
-        )}
-
-        {/* Terminate Session Button */}
-        <div className="mb-6">
-          <button
-            onClick={handleTerminateSession}
-            className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-6 rounded-lg flex items-center"
-          >
-            <X className="mr-2" size={16} />
-            Terminate Session
-          </button>
-        </div>
+        </footer>
+        <button 
+          onClick={() => currentUser ? setShowSolution(true) : setShowLoginForm(true)} 
+          style={{
+            position: 'fixed',
+            top: 10,
+            right: 10,
+            zIndex: 1000,
+            padding: "8px 12px",
+            backgroundColor: "#f3f4f6",
+            border: "1px solid #d1d5db",
+            borderRadius: "4px",
+            cursor: "pointer"
+          }}
+        >
+          Launch Demo
+        </button>
       </div>
-    </div>
-  );
+    );
+  };
+
+  return renderContent();
 }
 
 export default App;
+

@@ -1,6 +1,5 @@
 import React from 'react';
-import { Shield, Lock, Link, Target, AlertTriangle, Search, FileText, Loader } from 'lucide-react';
-import { ProcessingStep } from '../types';
+import { CheckCircle, AlertCircle, Loader, FileText, ShieldCheck, BarChart, LineChart, Lock } from 'lucide-react';
 
 interface ProcessingAnimationProps {
   currentStep: number;
@@ -15,112 +14,102 @@ export const ProcessingAnimation: React.FC<ProcessingAnimationProps> = ({
   isComplete,
   error
 }) => {
-  const steps: ProcessingStep[] = [
-    { id: 0, name: "Validating Input Data", icon: "search", completed: currentStep > 0, active: currentStep === 0 },
-    { id: 1, name: "Sanitizing Transaction Data", icon: "shield", completed: currentStep > 1, active: currentStep === 1 },
-    { id: 2, name: "AES-256-GCM Encryption", icon: "lock", completed: currentStep > 2, active: currentStep === 2 },
-    { id: 3, name: "Blockchain Merkle Tree Verification", icon: "link", completed: currentStep > 3, active: currentStep === 3 },
-    { id: 4, name: "CIBYL Score Analysis", icon: "target", completed: currentStep > 4, active: currentStep === 4 },
-    { id: 5, name: "Risk Assessment", icon: "alert-triangle", completed: currentStep > 5, active: currentStep === 5 },
-    { id: 6, name: "Additional Security Checks", icon: "search", completed: currentStep > 6, active: currentStep === 6 },
-    { id: 7, name: "Generating Security Report", icon: "file-text", completed: currentStep > 7, active: currentStep === 7 },
+  const steps = [
+    { name: 'Reading file', icon: FileText },
+    { name: 'Parsing transactions', icon: BarChart },
+    { name: 'Processing data', icon: LineChart },
+    { name: 'Security verification', icon: ShieldCheck },
+    { name: 'Risk assessment', icon: Lock },
+    { name: 'Generating report', icon: FileText },
+    { name: 'Finalizing', icon: CheckCircle },
   ];
 
-  const getIcon = (iconName: string, isActive: boolean, isCompleted: boolean) => {
-    const className = `mr-3 ${
-      isCompleted ? 'text-green-500' : 
-      isActive ? 'text-blue-500' : 
-      'text-gray-400'
-    }`;
-    
-    const size = 20;
-    
-    switch (iconName) {
-      case 'search': return <Search className={className} size={size} />;
-      case 'shield': return <Shield className={className} size={size} />;
-      case 'lock': return <Lock className={className} size={size} />;
-      case 'link': return <Link className={className} size={size} />;
-      case 'target': return <Target className={className} size={size} />;
-      case 'alert-triangle': return <AlertTriangle className={className} size={size} />;
-      case 'file-text': return <FileText className={className} size={size} />;
-      default: return <Search className={className} size={size} />;
-    }
-  };
-
-  if (error) {
-    return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-        <AlertTriangle className="text-red-500 text-2xl mb-2 mx-auto" size={32} />
-        <h3 className="text-lg font-semibold text-red-700 mb-2">Security Alert</h3>
-        <p className="text-red-600 mb-2">{error}</p>
-        <p className="text-red-500 text-sm">Please verify input data and try again</p>
-      </div>
-    );
-  }
-
-  if (isComplete) {
-    return null;
-  }
-
-  const progress = (currentStep / (totalSteps - 1)) * 100;
-
   return (
-    <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-      <h3 className="text-lg font-semibold text-blue-700 mb-4 flex items-center">
-        <Loader className="animate-spin mr-2" size={20} />
-        Processing Secure Transactions
+    <div className="bg-white rounded-lg shadow-md p-6">
+      <h3 className="text-lg font-semibold mb-4">
+        {error ? 'Processing Error' : isComplete ? 'Processing Complete' : 'Processing Transaction Data'}
       </h3>
-      
-      <div className="space-y-3 mb-6">
-        {steps.map((step) => (
-          <div key={step.id} className="flex items-center">
-            {step.completed ? (
-              <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center mr-3">
-                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                </svg>
-              </div>
-            ) : step.active ? (
-              <Loader className="animate-spin text-blue-500 mr-3" size={20} />
-            ) : (
-              <div className="w-5 h-5 bg-gray-300 rounded-full mr-3" />
-            )}
-            <span className={`${
-              step.completed ? 'text-green-700' : 
-              step.active ? 'text-blue-700 font-semibold' : 
-              'text-gray-500'
-            }`}>
-              {step.name}
-            </span>
+
+      {error ? (
+        <div className="p-4 bg-red-50 border border-red-200 rounded-lg flex items-start">
+          <AlertCircle className="text-red-500 mr-3 mt-0.5" size={20} />
+          <div>
+            <p className="text-red-700 font-medium">Processing failed</p>
+            <p className="text-red-600 text-sm mt-1">{error}</p>
           </div>
-        ))}
-      </div>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <div className="relative">
+            <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-gray-200">
+              <div
+                style={{ width: `${(currentStep / totalSteps) * 100}%` }}
+                className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-indigo-600 transition-all duration-500"
+              ></div>
+            </div>
+            <div className="text-right text-sm text-gray-500">
+              {isComplete ? 'Complete' : `${currentStep} of ${totalSteps} steps`}
+            </div>
+          </div>
 
-      {currentStep >= 2 && (
-        <div className="flex items-center mt-4 p-3 bg-blue-100 rounded-lg">
-          <Lock className="text-blue-600 mr-2 animate-pulse" size={24} />
-          <span className="text-blue-600 font-medium">Encryption Process Active</span>
+          <div className="space-y-2">
+            {steps.map((step, index) => {
+              // Limited to first 7 steps for simplicity
+              if (index >= totalSteps - 1) return null;
+
+              const StepIcon = step.icon;
+              const isCurrent = index === currentStep;
+              const isComplete = index < currentStep;
+
+              return (
+                <div
+                  key={index}
+                  className={`flex items-center p-2 rounded-lg ${
+                    isCurrent ? 'bg-blue-50' : isComplete ? 'bg-green-50' : 'bg-gray-50'
+                  }`}
+                >
+                  <div
+                    className={`p-2 rounded-full mr-3 ${
+                      isCurrent
+                        ? 'bg-blue-100 text-blue-600'
+                        : isComplete
+                        ? 'bg-green-100 text-green-600'
+                        : 'bg-gray-200 text-gray-400'
+                    }`}
+                  >
+                    {isCurrent ? (
+                      <Loader className="animate-spin" size={16} />
+                    ) : isComplete ? (
+                      <CheckCircle size={16} />
+                    ) : (
+                      <StepIcon size={16} />
+                    )}
+                  </div>
+                  <div className="flex-grow">
+                    <div
+                      className={`text-sm ${
+                        isCurrent
+                          ? 'text-blue-700 font-medium'
+                          : isComplete
+                          ? 'text-green-700'
+                          : 'text-gray-500'
+                      }`}
+                    >
+                      {step.name}
+                    </div>
+                    {isCurrent && (
+                      <div className="text-xs text-blue-600">Processing...</div>
+                    )}
+                  </div>
+                  {isComplete && (
+                    <CheckCircle className="text-green-500" size={16} />
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
-
-      {currentStep >= 3 && (
-        <div className="flex items-center mt-2 p-3 bg-purple-100 rounded-lg">
-          <Link className="text-purple-600 mr-2 animate-pulse" size={24} />
-          <span className="text-purple-600 font-medium">Blockchain Verification Active</span>
-        </div>
-      )}
-
-      <div className="mt-4">
-        <div className="bg-gray-200 rounded-full h-3">
-          <div
-            className="bg-blue-500 h-3 rounded-full transition-all duration-500"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-        <p className="text-sm text-gray-600 mt-2 text-center">
-          Processing: {Math.round(progress)}% Complete
-        </p>
-      </div>
     </div>
   );
 };
