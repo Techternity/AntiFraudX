@@ -17,7 +17,7 @@ import { ProcessingAnimation } from './ProcessingAnimation';
 import { StatsCards } from './StatsCards';
 import { BankUser, ProcessedTransaction, SecurityStats } from '../types';
 import { generateSessionKey, parseCSV, processTransaction } from '../utils/mockSecurity';
-//HEALED
+//HE
 interface DashboardProps {
   user: BankUser | null;
   onLogout: () => void;
