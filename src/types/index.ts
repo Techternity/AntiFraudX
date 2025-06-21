@@ -1,61 +1,31 @@
 export interface Transaction {
-  account_id: string;
-  user_id: string;
-  transaction_amount: number;
-  recipient_account: string;
-  sender_country: string;
-  recipient_country: string;
-  account_age_days: number;
-  previous_failed_transactions: number;
-  transaction_type: string;
-  purpose: string;
-  sender_account_verified: boolean;
-  account_holder_name?: string;
-  bank_code?: string;
-  branch_code?: string;
-  ifsc_code?: string;
+  accountNumber: string;
+  numberOfAccounts: number;
+  reasonOfOpeningAccount: string;
+  transactionAmount: number;
+  transactionDate: string;
 }
 
-export interface RiskAnalysis {
-  cibyl_score: number;
-  risk_level: 'CRITICAL' | 'HIGH' | 'MODERATE' | 'LOW';
-  risk_factors: string[];
-  recommendation: 'BLOCK' | 'QUARANTINE' | 'REVIEW' | 'APPROVE';
-  confidence: number;
-  security_checks: string[];
-}
-
-export interface BlockchainTransaction {
-  tx_hash: string;
-  block_number: number;
-  from_address: string;
-  to_address: string;
-  gas_used: number;
-  gas_price: number;
-  status: string;
-  timestamp: number;
-  data_hash: string;
-  merkle_leaf: string;
-  chain_id: number;
-  nonce: string;
-}
-
-export interface EncryptedData {
-  encrypted_data: string;
-  transaction_hash: string;
-  hmac: string;
-  encryption_method: string;
-  timestamp: number;
-  nonce: string;
+export interface DisplayTransaction {
+  id: string;
+  accountNumber: string;
+  numberOfAccounts: number;
+  reasonOfOpeningAccount: string;
+  transactionAmount: number;
+  transactionDate: string;
+  risk_analysis: {
+    risk_level: 'LOW' | 'MODERATE' | 'HIGH' | 'CRITICAL';
+    score_label: string;
+  };
 }
 
 export interface ProcessedTransaction {
+  id: string;
   original_data: Transaction;
-  encrypted_data: EncryptedData;
-  blockchain_tx: BlockchainTransaction;
-  risk_analysis: RiskAnalysis;
-  processed_at: string;
-  security_session: string;
+  risk_analysis: {
+    risk_level: 'LOW' | 'MODERATE' | 'HIGH' | 'CRITICAL';
+    score_label: string;
+  };
 }
 
 export interface ProcessingStep {

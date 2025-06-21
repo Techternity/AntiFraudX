@@ -182,33 +182,47 @@ export const generateSessionKey = (): string => {
   return result;
 };
 
-export const parseCSV = (content: string): RawTransaction[] => {
-  const lines = content.trim().split('\n');
-  
+// Parse CSV content
+export const parseCSV = (content: string): Transaction[] => {
+  const lines = content.trim().split('\n').filter(line => line);
   if (lines.length < 2) {
-    return [];
+    throw new Error('CSV file must have a header and at least one data row.');
   }
-  
-  const headers = lines[0].split(',');
-  return lines.slice(1).map(line => {
+
+  const headers = lines[0].split(',').map(h => h.trim());
+
+  // Define a mapping from CSV header to our Transaction object keys
+  const headerMapping: { [key: string]: keyof Transaction } = {
+    'Account Number': 'accountNumber',
+    'number of accounts': 'numberOfAccounts',
+    'reason of opening account': 'reasonOfOpeningAccount',
+    'transaction amount': 'transactionAmount',
+    'transaction date': 'transactionDate',
+  };
+
+  const requiredHeaders = Object.keys(headerMapping);
+
+  if (!requiredHeaders.every(header => headers.includes(header))) {
+    const missing = requiredHeaders.filter(h => !headers.includes(h));
+    throw new Error(`CSV is missing required headers: ${missing.join(', ')}`);
+  }
+
+  return lines.slice(1).map((line, i) => {
     const values = line.split(',');
-    const transaction: any = {};
-    
-    headers.forEach((header, index) => {
-      if (index < values.length) {
-        const value = values[index].trim();
-        
-        if (['transaction_amount', 'account_age_days', 'previous_failed_transactions'].includes(header)) {
-          transaction[header] = parseFloat(value);
-        } else if (header === 'sender_account_verified') {
-          transaction[header] = value.toLowerCase() === 'true';
-        } else {
-          transaction[header] = value;
-        }
-      }
-    });
-    
-    return transaction as RawTransaction;
+    const row = headers.reduce((obj, header, index) => {
+      obj[header] = values[index] ? values[index].trim() : '';
+      return obj;
+    }, {} as { [key: string]: string });
+
+    const transaction: Transaction = {
+      accountNumber: row['Account Number'],
+      numberOfAccounts: parseInt(row['number of accounts'] || '0', 10),
+      reasonOfOpeningAccount: row['reason of opening account'],
+      transactionAmount: parseFloat(row['transaction amount'] || '0'),
+      transactionDate: row['transaction date'],
+    };
+
+    return transaction;
   });
 };
 

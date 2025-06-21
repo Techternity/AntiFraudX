@@ -15,7 +15,8 @@ import {
 import { FileUploader } from './FileUploader';
 import { ProcessingAnimation } from './ProcessingAnimation';
 import { StatsCards } from './StatsCards';
-import { BankUser, ProcessedTransaction, SecurityStats } from '../types';
+import { TransactionTable } from './TransactionTable';
+import { BankUser, ProcessedTransaction, SecurityStats, DisplayTransaction } from '../types';
 import { generateSessionKey, parseCSV, processTransaction } from '../utils/mockSecurity';
 
 interface DashboardProps {
@@ -31,7 +32,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [processedTransactions, setProcessedTransactions] = useState<ProcessedTransaction[]>([]);
-  const [error, setError] = useState<string | null>(null);  const [lastActivity, setLastActivity] = useState(Date.now());
+  const [displayTransactions, setDisplayTransactions] = useState<DisplayTransaction[]>([]);
+  const [originalCsvData, setOriginalCsvData] = useState<any[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [lastActivity, setLastActivity] = useState(Date.now());
   // Add debug logs
   console.log("Dashboard rendered with user:", user);
   console.log("Current active nav:", activeNav);
@@ -98,6 +102,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       setCurrentStep(2);
       await new Promise(resolve => setTimeout(resolve, 800));
 
+      // Store original CSV data for display
+      setOriginalCsvData(transactions);
+
       const formData = new FormData();
       formData.append('file', file);
 
@@ -111,34 +118,41 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         throw new Error(errorData.detail || 'Prediction server failed');
       }
 
-      const results: { user_id: string; score_label: string }[] = await response.json();
+      const results: { 
+        user_id: string; 
+        account_number: string;
+        number_of_accounts: number;
+        reason_of_opening_account: string;
+        transaction_amount: number;
+        transaction_date: string;
+        score_label: string; 
+      }[] = await response.json();
 
       // Map results to ProcessedTransaction objects
       const processed = results.map((result, i) => {
-        // Find the original transaction data
-        const originalTx = transactions.find(t => t.user_id === result.user_id);
-
         const riskLevelMap = {
           good: 'LOW',
           moderate: 'MODERATE',
           bad: 'CRITICAL',
+          critical: 'CRITICAL',
         };
         
         const risk_level = riskLevelMap[result.score_label as keyof typeof riskLevelMap] || 'MODERATE';
 
         return {
-          original_data: originalTx || {
-            account_id: `ACC${i}`,
+          original_data: {
+            account_id: result.account_number,
             user_id: result.user_id,
-            transaction_amount: 0,
+            account_holder_name: `Account ${result.account_number}`,
+            transaction_amount: result.transaction_amount,
             recipient_account: 'N/A',
-            sender_country: 'N/A',
-            recipient_country: 'N/A',
-            account_age_days: 0,
+            sender_country: 'IN',
+            recipient_country: 'IN',
+            account_age_days: 30,
             previous_failed_transactions: 0,
-            transaction_type: 'N/A',
-            purpose: 'N/A',
-            sender_account_verified: false,
+            transaction_type: 'transfer',
+            purpose: result.reason_of_opening_account,
+            sender_account_verified: true,
           },
           encrypted_data: {
             encrypted_data: 'mock_encrypted_data',
@@ -175,10 +189,35 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         } as ProcessedTransaction;
       });
 
+      // Create DisplayTransaction objects for the table
+      const displayTransactions = results.map((result, i) => {
+        const riskLevelMap = {
+          good: 'LOW',
+          moderate: 'MODERATE',
+          bad: 'CRITICAL',
+        };
+        
+        const risk_level = riskLevelMap[result.score_label as keyof typeof riskLevelMap] || 'MODERATE';
+
+        return {
+          id: `tx_${i}`,
+          accountNumber: result.account_number,
+          numberOfAccounts: result.number_of_accounts,
+          reasonOfOpeningAccount: result.reason_of_opening_account,
+          transactionAmount: result.transaction_amount,
+          transactionDate: result.transaction_date,
+          risk_analysis: {
+            risk_level: risk_level,
+            score_label: result.score_label,
+          },
+        } as DisplayTransaction;
+      });
+
       setCurrentStep(8);
       await new Promise(resolve => setTimeout(resolve, 500));
 
       setProcessedTransactions(processed);
+      setDisplayTransactions(displayTransactions);
       setActiveNav('overview'); // Auto-switch to overview after successful upload
       setIsProcessing(false);
 
@@ -239,7 +278,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       };
 
   // Filter high-risk transactions for alerts
-  const highRiskTransactions = processedTransactions.filter(
+  const highRiskTransactions = displayTransactions.filter(
     t => t.risk_analysis.risk_level === 'HIGH' || t.risk_analysis.risk_level === 'CRITICAL'
   );
 
@@ -462,7 +501,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           )}          {/* Transactions Section */}
           {activeNav === 'transactions' && (
             <div className="space-y-6">
-              {processedTransactions.length === 0 ? (
+              {displayTransactions.length === 0 ? (
                 <div className="bg-white p-8 rounded-lg shadow-md text-center">
                   <div className="text-gray-400 mb-4">
                     <FileText size={48} className="mx-auto" />
@@ -477,102 +516,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                   </button>
                 </div>
               ) : (
-                <div className="bg-white rounded-lg shadow-md">
-                  <div className="p-6">
-                    <div className="flex justify-between items-center mb-6">
-                      <h2 className="text-lg font-semibold">Detailed Transaction Analysis</h2>
-                      <button
-                        onClick={handleDownloadReport}
-                        className="bg-indigo-600 text-white flex items-center px-4 py-2 rounded hover:bg-indigo-700"
-                      >
-                        <Download size={16} className="mr-2" />
-                        Download Report
-                      </button>
-                    </div>
-                    
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                          <tr>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Account ID</th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User ID</th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Risk Level</th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Recommendation</th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Blockchain TX</th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Model Prediction</th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                          {processedTransactions.map((transaction, index) => (
-                            <tr key={index} className="hover:bg-gray-50">
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                {transaction.original_data.account_id}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {transaction.original_data.user_id}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                ${transaction.original_data.transaction_amount.toLocaleString()}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                {transaction.risk_analysis.risk_level === 'LOW' && (
-                                  <span className="inline-flex items-center bg-green-100 text-green-800 text-xs px-2.5 py-0.5 rounded-full">
-                                    <CheckCircle className="mr-1" size={12} />
-                                    Low
-                                  </span>
-                                )}
-                                {transaction.risk_analysis.risk_level === 'MODERATE' && (
-                                  <span className="inline-flex items-center bg-yellow-100 text-yellow-800 text-xs px-2.5 py-0.5 rounded-full">
-                                    <AlertTriangle className="mr-1" size={12} />
-                                    Moderate
-                                  </span>
-                                )}
-                                {(transaction.risk_analysis.risk_level === 'HIGH' || transaction.risk_analysis.risk_level === 'CRITICAL') && (
-                                  <span className="inline-flex items-center bg-red-100 text-red-800 text-xs px-2.5 py-0.5 rounded-full">
-                                    <AlertTriangle className="mr-1" size={12} />
-                                    {transaction.risk_analysis.risk_level}
-                                  </span>
-                                )}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                <span className={`inline-flex items-center text-xs px-2.5 py-0.5 rounded-full ${
-                                  transaction.risk_analysis.recommendation === 'APPROVE' 
-                                    ? 'bg-green-100 text-green-800' 
-                                    : transaction.risk_analysis.recommendation === 'REVIEW'
-                                    ? 'bg-yellow-100 text-yellow-800'
-                                    : 'bg-red-100 text-red-800'
-                                }`}>
-                                  {transaction.risk_analysis.recommendation}
-                                </span>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                <span className="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded-md font-mono">
-                                  {transaction.blockchain_tx.tx_hash.substring(0, 10)}...
-                                </span>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {transaction.risk_analysis.risk_factors.join(', ')}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600 hover:text-blue-800">
-                                <button>View Details</button>
-                              </td>
-                            </tr>
-                          ))}
-                          
-                          {processedTransactions.length === 0 && (
-                            <tr>
-                              <td colSpan={8} className="px-6 py-4 text-center text-sm text-gray-500">
-                                No transactions found
-                              </td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </div>
+                <TransactionTable 
+                  transactions={displayTransactions}
+                  onDownloadReport={handleDownloadReport}
+                />
               )}
             </div>
           )}
@@ -597,30 +544,22 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     <table className="min-w-full bg-white rounded-lg overflow-hidden">
                       <thead className="bg-gray-50">
                         <tr>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Account ID</th>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User ID</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Account Number</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Score Label</th>
                           <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
                           <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Risk Level</th>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Risk Factors</th>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Recommendation</th>
                           <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-200">
                         {highRiskTransactions.map((tx, index) => (
                           <tr key={index} className="hover:bg-gray-50">
-                            <td className="px-4 py-2 text-sm text-gray-900">{tx.original_data.account_id}</td>
-                            <td className="px-4 py-2 text-sm text-gray-900">{tx.original_data.user_id}</td>
-                            <td className="px-4 py-2 text-sm text-gray-900">${tx.original_data.transaction_amount.toLocaleString()}</td>
+                            <td className="px-4 py-2 text-sm text-gray-900">{tx.accountNumber}</td>
+                            <td className="px-4 py-2 text-sm text-gray-900">{tx.risk_analysis.score_label}</td>
+                            <td className="px-4 py-2 text-sm text-gray-900">${tx.transactionAmount.toLocaleString()}</td>
                             <td className="px-4 py-2 text-sm">
                               <span className="bg-red-100 text-red-800 text-xs font-semibold px-2 py-1 rounded-full">
                                 {tx.risk_analysis.risk_level}
-                              </span>
-                            </td>
-                            <td className="px-4 py-2 text-sm text-gray-900">{tx.risk_analysis.risk_factors.join(', ')}</td>
-                            <td className="px-4 py-2 text-sm">
-                              <span className="bg-yellow-100 text-yellow-800 text-xs font-semibold px-2 py-1 rounded-full">
-                                {tx.risk_analysis.recommendation}
                               </span>
                             </td>
                             <td className="px-4 py-2 text-sm">
