@@ -26,7 +26,7 @@ function App() {
       }
     }
     setIsInitialized(true);
-    console.log("App initialized");
+    console.log("App initialized"); //resolved
   }, []);
 
   // Handle state updates that should happen after render
