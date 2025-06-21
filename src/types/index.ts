@@ -123,7 +123,7 @@ export interface AlertConfig {
 }
 
 export interface ServerResult {
-  // Define the properties of ServerResult
+  // Define the properties of ServerResult GG
   success: boolean;
   message: string;
   data?: any; // Adjust the type as necessary
