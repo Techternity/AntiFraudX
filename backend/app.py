@@ -17,7 +17,8 @@ app.add_middleware(
         "http://localhost:5174",
         "http://127.0.0.1:5174",
         "http://localhost:5175",
-        "http://127.0.0.1:5175"
+        "http://127.0.0.1:5175",
+        "https://antifraudx-frontend.onrender.com"
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -26,10 +27,11 @@ app.add_middleware(
 
 # Load model and preprocessors
 try:
-    model = joblib.load('backend/fraud_model.pkl')
-    le_reason = joblib.load('backend/le_reason.pkl')
-    le_label = joblib.load('backend/le_label.pkl')
-    scaler = joblib.load('backend/scaler.pkl')
+    model = joblib.load(os.path.join(BASE_DIR, "fraud_model.pkl"))
+    le_reason = joblib.load(os.path.join(BASE_DIR, "le_reason.pkl"))
+    le_label = joblib.load(os.path.join(BASE_DIR, "le_label.pkl"))
+    scaler = joblib.load(os.path.join(BASE_DIR, "scaler.pkl"))
+    #print("Models loaded successfully")
 except FileNotFoundError as e:
     # This is a fallback for when the model files are not found.
     # In a real application, you would handle this more gracefully.
@@ -106,4 +108,5 @@ if __name__ == "__main__":
     import uvicorn
     # The server will look for model files in the 'backend' directory.
     # Make sure to run this script from the root directory of the project.
-    uvicorn.run("backend.app:app", host="127.0.0.1", port=8000, reload=True) 
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run("backend.app:app", host="0.0.0.0", port=port, reload=True) 
