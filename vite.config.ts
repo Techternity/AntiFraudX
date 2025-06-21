@@ -5,7 +5,14 @@ export default defineConfig({
   plugins: [react()],
   server: {
     host: '0.0.0.0',
-    port: 8000, // Or whatever port Render expects
-    allowedHosts: ['antifraudx-1.onrender.com']
+    port:  5173,
+    allowedHosts: ['antifraudx-1.onrender.com'],
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        secure: false,
+      }
+    }
   }
 })
