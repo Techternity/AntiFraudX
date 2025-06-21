@@ -5,7 +5,7 @@ const generateHex = (length: number): string => {
   return Array.from({ length }, () => Math.floor(Math.random() * 16).toString(16)).join('');
 };
 
-// Mock encryption
+// Mock encryption 
 export const encryptTransaction = (transaction: Transaction): EncryptedData => {
   const data = JSON.stringify(transaction);
   const encrypted = btoa(data); // Simple base64 encoding for demo
