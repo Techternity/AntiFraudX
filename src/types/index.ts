@@ -54,12 +54,12 @@ export interface EncryptedData {
 }
 
 export interface ProcessedTransaction {
+  id: string;
   original_data: Transaction;
-  encrypted_data: EncryptedData;
-  blockchain_tx: BlockchainTransaction;
-  risk_analysis: RiskAnalysis;
-  processed_at: string;
-  security_session: string;
+  risk_analysis: {
+    risk_level: 'LOW' | 'MODERATE' | 'HIGH' | 'CRITICAL';
+    score_label: string;
+  };
 }
 
 export interface ProcessingStep {

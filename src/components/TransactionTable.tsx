@@ -9,12 +9,33 @@ import {
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
-import { ProcessedTransaction } from '../types';
+import type { DisplayTransaction } from '../types';
 
 interface TransactionTableProps {
-  transactions: ProcessedTransaction[];
+  transactions: DisplayTransaction[];
   onDownloadReport: () => void;
 }
+
+const SortableHeader: React.FC<{
+  field: string;
+  currentSortField: string | null;
+  sortDirection: 'asc' | 'desc';
+  onSort: (field: string) => void;
+  children: React.ReactNode;
+}> = ({ field, currentSortField, sortDirection, onSort, children }) => (
+  <th 
+    scope="col" 
+    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+    onClick={() => onSort(field)}
+  >
+    <div className="flex items-center">
+      {children}
+      {currentSortField === field && (
+        <ArrowUpDown size={14} className="ml-1" />
+      )}
+    </div>
+  </th>
+);
 
 export const TransactionTable: React.FC<TransactionTableProps> = ({ 
   transactions, 
@@ -22,19 +43,18 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [sortField, setSortField] = useState<string | null>(null);
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [sortField, setSortField] = useState<string | null>('transactionDate');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const itemsPerPage = 10;
 
   // Filter transactions based on search
   const filteredTransactions = transactions.filter(tx => {
     const searchLower = searchTerm.toLowerCase();
     return (
-      tx.original_data.account_id.toLowerCase().includes(searchLower) ||
-      tx.original_data.user_id.toLowerCase().includes(searchLower) ||
-      tx.original_data.recipient_account?.toLowerCase().includes(searchLower) ||
-      tx.original_data.transaction_type?.toLowerCase().includes(searchLower) ||
-      tx.risk_analysis.risk_level.toLowerCase().includes(searchLower)
+      tx.accountNumber.toLowerCase().includes(searchLower) ||
+      tx.reasonOfOpeningAccount.toLowerCase().includes(searchLower) ||
+      tx.transactionDate.toLowerCase().includes(searchLower) ||
+      tx.risk_analysis.score_label.toLowerCase().includes(searchLower)
     );
   });
 
@@ -42,29 +62,33 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
   const sortedTransactions = [...filteredTransactions].sort((a, b) => {
     if (!sortField) return 0;
 
-    let aVal, bVal;
+    let aVal: any, bVal: any;
 
     switch (sortField) {
-      case 'account_id':
-        aVal = a.original_data.account_id;
-        bVal = b.original_data.account_id;
+      case 'accountNumber':
+        aVal = a.accountNumber;
+        bVal = b.accountNumber;
         break;
-      case 'user_id':
-        aVal = a.original_data.user_id;
-        bVal = b.original_data.user_id;
+      case 'transactionDate':
+        aVal = new Date(a.transactionDate).getTime();
+        bVal = new Date(b.transactionDate).getTime();
         break;
-      case 'amount':
-        aVal = a.original_data.transaction_amount;
-        bVal = b.original_data.transaction_amount;
+      case 'transactionAmount':
+        aVal = a.transactionAmount;
+        bVal = b.transactionAmount;
         break;
-      case 'risk_level':
+      case 'riskLevel':
         aVal = a.risk_analysis.risk_level;
         bVal = b.risk_analysis.risk_level;
         break;
-      case 'transaction_type':
-        aVal = a.original_data.transaction_type;
-        bVal = b.original_data.transaction_type;
+      case 'numberOfAccounts':
+        aVal = a.numberOfAccounts;
+        bVal = b.numberOfAccounts;
         break;
+      case 'reasonOfOpeningAccount':
+          aVal = a.reasonOfOpeningAccount;
+          bVal = b.reasonOfOpeningAccount;
+          break;
       default:
         return 0;
     }
@@ -126,10 +150,10 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md">
+    <div className="bg-white rounded-lg shadow-md mt-6">
       <div className="p-6">
         <div className="flex flex-col md:flex-row justify-between mb-4 items-start md:items-center">
-          <h3 className="text-lg font-semibold mb-3 md:mb-0">Transaction History</h3>
+          <h3 className="text-lg font-semibold mb-3 md:mb-0">Transaction Analysis</h3>
           
           <div className="flex flex-col sm:flex-row w-full md:w-auto space-y-3 sm:space-y-0 sm:space-x-3">
             <div className="relative">
@@ -162,108 +186,42 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th 
-                  scope="col" 
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                  onClick={() => handleSort('account_id')}
-                >
-                  <div className="flex items-center">
-                    Account ID
-                    {sortField === 'account_id' && (
-                      <ArrowUpDown size={14} className="ml-1" />
-                    )}
-                  </div>
-                </th>
-                <th 
-                  scope="col" 
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                  onClick={() => handleSort('user_id')}
-                >
-                  <div className="flex items-center">
-                    User ID
-                    {sortField === 'user_id' && (
-                      <ArrowUpDown size={14} className="ml-1" />
-                    )}
-                  </div>
-                </th>
-                <th 
-                  scope="col" 
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                  onClick={() => handleSort('amount')}
-                >
-                  <div className="flex items-center">
-                    Amount
-                    {sortField === 'amount' && (
-                      <ArrowUpDown size={14} className="ml-1" />
-                    )}
-                  </div>
-                </th>
-                <th 
-                  scope="col" 
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                  onClick={() => handleSort('risk_level')}
-                >
-                  <div className="flex items-center">
-                    Risk Level
-                    {sortField === 'risk_level' && (
-                      <ArrowUpDown size={14} className="ml-1" />
-                    )}
-                  </div>
-                </th>
-                <th 
-                  scope="col" 
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                  onClick={() => handleSort('transaction_type')}
-                >
-                  <div className="flex items-center">
-                    Transaction Type
-                    {sortField === 'transaction_type' && (
-                      <ArrowUpDown size={14} className="ml-1" />
-                    )}
-                  </div>
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Sender / Recipient
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
+                <SortableHeader field="accountNumber" currentSortField={sortField} sortDirection={sortDirection} onSort={handleSort}>Account Number</SortableHeader>
+                <SortableHeader field="transactionDate" currentSortField={sortField} sortDirection={sortDirection} onSort={handleSort}>Date</SortableHeader>
+                <SortableHeader field="transactionAmount" currentSortField={sortField} sortDirection={sortDirection} onSort={handleSort}>Amount</SortableHeader>
+                <SortableHeader field="numberOfAccounts" currentSortField={sortField} sortDirection={sortDirection} onSort={handleSort}>No. of Accounts</SortableHeader>
+                <SortableHeader field="reasonOfOpeningAccount" currentSortField={sortField} sortDirection={sortDirection} onSort={handleSort}>Reason</SortableHeader>
+                <SortableHeader field="riskLevel" currentSortField={sortField} sortDirection={sortDirection} onSort={handleSort}>Risk Level</SortableHeader>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {paginatedTransactions.map((transaction, index) => (
-                <tr key={index} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {transaction.original_data.account_id}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {transaction.original_data.user_id}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    ${transaction.original_data.transaction_amount.toLocaleString()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {getRiskBadge(transaction.risk_analysis.risk_level)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {transaction.original_data.transaction_type || 'N/A'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <div>
-                      <div className="text-xs text-gray-500">From: {transaction.original_data.sender_country || 'N/A'}</div>
-                      <div className="text-xs text-gray-500">To: {transaction.original_data.recipient_country || 'N/A'}</div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <button className="text-indigo-600 hover:text-indigo-900">View Details</button>
-                  </td>
-                </tr>
-              ))}
-
-              {paginatedTransactions.length === 0 && (
+              {paginatedTransactions.length > 0 ? (
+                paginatedTransactions.map((transaction) => (
+                  <tr key={transaction.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {transaction.accountNumber}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {new Date(transaction.transactionDate).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      ${transaction.transactionAmount.toLocaleString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                      {transaction.numberOfAccounts}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {transaction.reasonOfOpeningAccount}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {getRiskBadge(transaction.risk_analysis.risk_level)}
+                    </td>
+                  </tr>
+                ))
+              ) : (
                 <tr>
-                  <td colSpan={7} className="px-6 py-4 text-center text-gray-500">
-                    No transactions found
+                  <td colSpan={6} className="text-center py-10 text-gray-500">
+                    No transactions found.
                   </td>
                 </tr>
               )}
@@ -271,68 +229,27 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
           </table>
         </div>
 
-        {/* Pagination */}
         {pageCount > 1 && (
-          <div className="flex items-center justify-between border-t border-gray-200 bg-white py-3 mt-4">
-            <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-              <div>
-                <p className="text-sm text-gray-700">
-                  Showing <span className="font-medium">{Math.min((currentPage - 1) * itemsPerPage + 1, filteredTransactions.length)}</span>{' '}
-                  to <span className="font-medium">{Math.min(currentPage * itemsPerPage, filteredTransactions.length)}</span>{' '}
-                  of <span className="font-medium">{filteredTransactions.length}</span> results
-                </p>
-              </div>
-              <div>
-                <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
-                  <button
-                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                    disabled={currentPage === 1}
-                    className={`relative inline-flex items-center rounded-l-md px-2 py-2 ${
-                      currentPage === 1 ? 'text-gray-300' : 'text-gray-500 hover:bg-gray-50'
-                    }`}
-                  >
-                    <ChevronLeft className="h-5 w-5" />
-                  </button>
-                  
-                  {Array.from({ length: Math.min(5, pageCount) }).map((_, i) => {
-                    let pageNum;
-                    if (pageCount <= 5) {
-                      pageNum = i + 1;
-                    } else if (currentPage <= 3) {
-                      pageNum = i + 1;
-                    } else if (currentPage >= pageCount - 2) {
-                      pageNum = pageCount - 4 + i;
-                    } else {
-                      pageNum = currentPage - 2 + i;
-                    }
-
-                    return (
-                      <button
-                        key={i}
-                        onClick={() => setCurrentPage(pageNum)}
-                        className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
-                          currentPage === pageNum
-                            ? 'z-10 bg-indigo-600 text-white'
-                            : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50'
-                        }`}
-                      >
-                        {pageNum}
-                      </button>
-                    );
-                  })}
-                  
-                  <button
-                    onClick={() => setCurrentPage(Math.min(pageCount, currentPage + 1))}
-                    disabled={currentPage === pageCount}
-                    className={`relative inline-flex items-center rounded-r-md px-2 py-2 ${
-                      currentPage === pageCount ? 'text-gray-300' : 'text-gray-500 hover:bg-gray-50'
-                    }`}
-                  >
-                    <ChevronRight className="h-5 w-5" />
-                  </button>
-                </nav>
-              </div>
-            </div>
+          <div className="flex justify-between items-center mt-4">
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <ChevronLeft size={16} className="inline mr-1" />
+              Previous
+            </button>
+            <span className="text-sm text-gray-700">
+              Page {currentPage} of {pageCount}
+            </span>
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, pageCount))}
+              disabled={currentPage === pageCount}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Next
+              <ChevronRight size={16} className="inline ml-1" />
+            </button>
           </div>
         )}
       </div>

@@ -10,6 +10,19 @@ export interface BankUser {
   password?: string; // Optional because we don't always want to include it
 }
 
+export interface DisplayTransaction {
+  id: string;
+  accountNumber: string;
+  numberOfAccounts: number;
+  reasonOfOpeningAccount: string;
+  transactionAmount: number;
+  transactionDate: string;
+  risk_analysis: {
+    risk_level: 'LOW' | 'MODERATE' | 'HIGH' | 'CRITICAL';
+    score_label: string;
+  };
+}
+
 export interface RawTransaction {
   ifsc_code: string;
   branch_code: string;

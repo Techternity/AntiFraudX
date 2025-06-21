@@ -18,6 +18,8 @@ app.add_middleware(
         "http://127.0.0.1:5174",
         "http://localhost:5175",
         "http://127.0.0.1:5175",
+        "http://localhost:5176",
+        "http://127.0.0.1:5176",
         "https://antifraudx-frontend.onrender.com"
     ],
     allow_credentials=True,
@@ -35,9 +37,9 @@ print(f"Files in backend directory: {os.listdir(BASE_DIR)}")
 
 # Load model and preprocessors
 try:
-    model = joblib.load(os.path.join(BASE_DIR, "fraud_model.pkl"))
+    model = joblib.load(os.path.join(BASE_DIR, "xgboost_model.pkl"))
     le_reason = joblib.load(os.path.join(BASE_DIR, "le_reason.pkl"))
-    le_label = joblib.load(os.path.join(BASE_DIR, "le_label.pkl"))
+    le_label = joblib.load(os.path.join(BASE_DIR, "le_cybil.pkl"))
     scaler = joblib.load(os.path.join(BASE_DIR, "scaler.pkl"))
     print("Models loaded successfully")
 except FileNotFoundError as e:
@@ -51,31 +53,37 @@ except FileNotFoundError as e:
 
 # Preprocess uploaded CSV
 def preprocess_data(df):
-    # The user provided an image with columns. Based on the app.py provided,
-    # these are the expected columns.
-    required_columns = ['user_id', 'num_savings_accounts', 'num_current_accounts',
-                        'transaction_amount', 'transaction_date', 'account_opening_reason']
+    required_columns = ['Account Number', 'number of accounts', 'reason of opening account', 
+                        'transaction amount', 'transaction date']
 
     if not all(col in df.columns for col in required_columns):
         missing = [col for col in required_columns if col not in df.columns]
         return None, f"Missing required columns in CSV: {', '.join(missing)}"
+    
+    # Make a copy for model input
+    df_model = df.copy()
+    df_model.rename(columns={
+        'Account Number': 'user_id',
+        'transaction amount': 'transaction_amount',
+        'transaction date': 'transaction_date'
+    }, inplace=True)
 
     try:
-        df['account_opening_reason'] = le_reason.transform(df['account_opening_reason'])
+        df_model['reason of opening account'] = le_reason.transform(df_model['reason of opening account'])
     except ValueError:
-        return None, "Unknown values in 'account_opening_reason'. Please check the values in the file."
+        return None, "Unknown values in 'reason of opening account'. Please check the values in the file."
 
-    df['avg_transaction_amount'] = df.groupby('user_id')['transaction_amount'].transform('mean')
-    df['transaction_frequency'] = df.groupby('user_id')['transaction_amount'].transform('count')
-    df['transaction_variance'] = df.groupby('user_id')['transaction_amount'].transform('var')
+    df_model['avg_transaction_amount'] = df_model.groupby('user_id')['transaction_amount'].transform('mean')
+    df_model['transaction_frequency'] = df_model.groupby('user_id')['transaction_amount'].transform('count')
+    df_model['transaction_variance'] = df_model.groupby('user_id')['transaction_amount'].transform('var')
 
-    df.fillna(0, inplace=True)
+    df_model.fillna(0, inplace=True)
 
-    features = ['num_savings_accounts', 'num_current_accounts', 'avg_transaction_amount',
-                'transaction_frequency', 'transaction_variance', 'account_opening_reason']
-    X = df[features].copy()
+    features = ['number of accounts', 'reason of opening account', 'avg_transaction_amount',
+                'transaction_frequency', 'transaction_variance']
+    X = df_model[features].copy()
 
-    numerical_cols = ['num_savings_accounts', 'num_current_accounts', 'avg_transaction_amount',
+    numerical_cols = ['number of accounts', 'avg_transaction_amount',
                       'transaction_frequency', 'transaction_variance']
     X[numerical_cols] = X[numerical_cols].astype(np.float64)
 
@@ -93,28 +101,57 @@ async def predict_file(file: UploadFile = File(...)):
 
     try:
         contents = await file.read()
-        # Ensure user_id is read as a string to prevent type mismatches with the frontend.
-        df = pd.read_csv(pd.io.common.BytesIO(contents), dtype={'user_id': str})
+        # Ensure Account Number is read as a string to prevent type mismatches with the frontend.
+        df = pd.read_csv(pd.io.common.BytesIO(contents), dtype={'Account Number': str})
+        print(f"CSV loaded successfully. Shape: {df.shape}, Columns: {list(df.columns)}")
     except Exception as e:
+        print(f"Error reading CSV: {str(e)}")
         raise HTTPException(status_code=400, detail=f"Error reading CSV: {str(e)}")
 
-    X, error = preprocess_data(df)
-    if error:
-        raise HTTPException(status_code=400, detail=error)
+    try:
+        X, error = preprocess_data(df)
+        if error:
+            print(f"Preprocessing error: {error}")
+            raise HTTPException(status_code=400, detail=error)
+        print(f"Preprocessing successful. Features shape: {X.shape}")
+    except Exception as e:
+        print(f"Preprocessing exception: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Preprocessing failed: {str(e)}")
 
-    predictions = model.predict(X)
-    score_labels = le_label.inverse_transform(predictions)
+    try:
+        predictions = model.predict(X)
+        score_labels = le_label.inverse_transform(predictions)
+        print(f"Predictions successful. Sample predictions: {score_labels[:5]}")
+        print(f"All predictions: {score_labels}")
+        print(f"Prediction counts: good={list(score_labels).count('good')}, moderate={list(score_labels).count('moderate')}, bad={list(score_labels).count('bad')}")
+    except Exception as e:
+        print(f"Prediction exception: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
 
-    results = pd.DataFrame({
-        'user_id': df['user_id'],
-        'score_label': score_labels
-    })
-
-    return results.to_dict(orient='records')
+    try:
+        # Use the original DataFrame for results
+        results = []
+        for i, (_, row) in enumerate(df.iterrows()):
+            result = {
+                'user_id': row['Account Number'],
+                'account_number': row['Account Number'],
+                'number_of_accounts': row['number of accounts'],
+                'reason_of_opening_account': row['reason of opening account'],
+                'transaction_amount': float(row['transaction amount']),
+                'transaction_date': row['transaction date'],
+                'score_label': score_labels[i]
+            }
+            results.append(result)
+        
+        print(f"Results created successfully. Shape: {len(results)}")
+        return results
+    except Exception as e:
+        print(f"Results creation exception: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Results creation failed: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn
     # The server will look for model files in the 'backend' directory.
     # Make sure to run this script from the root directory of the project.
     port = int(os.environ.get("PORT", 8000))
-    uvicorn.run("backend.app:app", host="0.0.0.0", port=port, reload=True) 
+    uvicorn.run("app:app", host="0.0.0.0", port=port, reload=True) 
