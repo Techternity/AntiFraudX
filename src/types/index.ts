@@ -74,25 +74,26 @@ export interface SecurityStats {
   blocked_transactions: number;
 }
 
+export type UserRole = 
+  | 'Bank Employee' 
+  | 'Individual' 
+  | 'Business' 
+  | 'Bank Manager' 
+  | 'Security Expert';
+
 export interface BankUser {
   id: string;
   name: string;
   email: string;
-  bank_code: string;
-  bank_name: string;
-  role: 'ADMIN' | 'ANALYST' | 'VIEWER';
-  permissions: string[];
-  last_login: string;
+  role: UserRole;
+  organization?: string;
 }
 
-export interface BankInfo {
-  code: string;
+export interface Bank {
+  id: string;
   name: string;
-  ifsc_prefix: string;
-  headquarters: string;
-  established: string;
-  total_branches: number;
-  logo_url?: string;
+  code: string;
+  logo?: string;
 }
 
 export interface DashboardFilters {
