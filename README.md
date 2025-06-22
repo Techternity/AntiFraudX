@@ -1,88 +1,43 @@
 # AntiFraudX
 
-## Running the Application
+## Team Name and Hackathon
+**Team Name**: CodeBusters  
+**Hackathon**: Hack4Bengal 4.0
 
-This application consists of:
-1. A frontend React application running on Vite
-2. A backend Node.js/Express API server
+## Acknowledgement
+We extend our gratitude to the Hack4Bengal 4.0 organizers for providing this platform to showcase our innovation. Special thanks to Major League Hacking (MLH) for the MongoDB Atlas track, our mentors for their guidance, and our team for their relentless dedication. We also appreciate MongoDB for the student credits that powered our project.
 
-### Installation
+## Introduction
+AntiFraudX is a real-time financial fraud prevention system designed to protect banks and account holders. By generating Trust Scores based on transaction patterns, locations, and user behavior, it instantly detects and mitigates fraud. Integrated with MongoDB Atlas, AntiFraudX uses rule-based transaction monitoring to flag suspicious activities like unusual amounts or high-frequency transactions, ensuring proactive fraud prevention. Our solution aligns with the MLH Best Use of MongoDB Atlas track, leveraging its scalability and low-latency for real-time analytics.
 
-To install dependencies:
+## YouTube Video
+[Watch our project demo here](https://www.youtube.com/watch?v=your-video-id)  
+*Note*: Please replace `https://www.youtube.com/watch?v=your-video-id` with the actual YouTube video link in the repository.
 
-```bash
-npm install
-```
+## Workflow
+The following diagram illustrates the real-time fraud prevention process of AntiFraudX:
 
-### Running in Development Mode
+![AntiFraudX Workflow](images/workflow.png)
 
-To run the frontend only (Vite server on port 5173):
+*Note*: To create the workflow image, use a tool like draw.io or Lucidchart to depict the flow: Transaction → Data Ingestion → Rule-Based Checks (Amount, Frequency, Location, Device) → Trust Score Update → Action (Block/Flag/Approve) → Bank Dashboard/Notification. Save the image as `workflow.png` and upload it to the `images` folder in your GitHub repository.
 
-```bash
-npm run dev
-```
+## Tech Stacks
+- **Backend**: Python, Flask
+- **Database**: MongoDB Atlas
+- **Real-Time Processing**: MongoDB Change Streams
+- **Frontend**: HTML, CSS, JavaScript
+- **Deployment**: Heroku
+- **Tools**: Git, Postman
 
-To run the backend only (Node.js server on port 5000):
+## Future Scope
+- Integrate machine learning for advanced anomaly detection.
+- Add behavioral biometrics for enhanced user authentication.
+- Implement adaptive authentication for high-risk transactions.
+- Expand to multi-bank ecosystems with API integrations.
+- Optimize for global scalability with microservices architecture.
 
-```bash
-npm run dev:server
-# or
-node server.js
-```
-
-To run both frontend and backend concurrently:
-
-```bash
-npm run dev:all
-```
-
-### Accessing the Application
-
-- Frontend: http://localhost:5173
-- Backend API: http://localhost:5000/api
-
-## API Endpoints
-
-- User Authentication: `/api/auth`
-- User Management: `/api/users`
-- Data Analysis: `/api/analysis`
-
-## Environment Variables
-
-Make sure you have a `.env` file in the root directory with the following variables:
-
-```
-MONGO_URI=your_mongodb_connection_string
-JWT_SECRET=your_jwt_secret
-PORT=5000
-```
-
-## Troubleshooting
-
-If you experience authentication issues, try the following:
-
-1. Add a test user:
-```bash
-npm run test:user
-```
-This will create a user with the following credentials:
-- Email: riyaz@gmail.com
-- Password: riyaz@gmail.com
-- Role: Bank Manager
-
-2. Check if the backend API is working:
-```bash
-curl http://localhost:5000/api/debug
-```
-You should see a JSON response indicating the API is working.
-
-3. Verify the user route:
-```bash
-curl http://localhost:5000/api/users/test
-```
-You should see a JSON response confirming the user routes are working.
-
-4. Make sure both servers are running:
-```bash
-npm run dev:all
-```
+## Links
+- [GitHub Repository](https://github.com/CodeBusters/AntiFraudX)
+- [MongoDB Atlas](https://www.mongodb.com/atlas)
+- [Hack4Bengal 4.0](https://hack4bengal.org)
+- [Project Presentation](https://docs.google.com/presentation/d/placeholder)
