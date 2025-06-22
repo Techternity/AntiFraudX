@@ -11,7 +11,8 @@ export default defineConfig({
         target: 'http://localhost:5000',
         changeOrigin: true,
         secure: false,
-        rewrite: (path) => path
+        // Remove the rewrite function as it might be causing issues
+        logLevel: 'debug' // Add debug logging to help troubleshoot proxy issues
       }
     }
   }

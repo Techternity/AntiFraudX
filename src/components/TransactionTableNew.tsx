@@ -49,16 +49,16 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
   const [isUploading, setIsUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<{success: boolean; message: string} | null>(null);
   const itemsPerPage = 10;
-    // Function to upload transaction data to the database
+  
+  // Function to upload transaction data to the database
   const handleUploadToDatabase = async () => {
     try {
-      // Set uploading state
       setIsUploading(true);
       setUploadStatus(null);
       
       console.log('Starting transaction upload process...');
       
-      // Prepare data for upload
+      // Prepare data for upload - converting transactions to the format needed by the backend
       const transactionsToUpload = transactions.map(tx => ({
         accountNumber: tx.accountNumber,
         numberOfAccounts: tx.numberOfAccounts,
@@ -68,7 +68,7 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
         risk_analysis: {
           risk_level: tx.risk_analysis.risk_level,
           score_label: tx.risk_analysis.score_label,
-          trust_score: tx.risk_analysis.trust_score || 100
+          trust_score: (tx.risk_analysis as any).trust_score || 100 // Default trust score if not available
         }
       }));
       
@@ -80,7 +80,7 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
         const response = await fetch('/api/transactions/upload-test', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
+            'Content-Type': 'application/json'
           },
           body: JSON.stringify({ transactions: transactionsToUpload }),
         });
@@ -103,8 +103,7 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
         throw error;
       }
     } catch (error) {
-      console.error('Error in upload process:', error);
-      
+      console.error('Error uploading transactions:', error);
       setUploadStatus({
         success: false,
         message: error instanceof Error ? error.message : 'An error occurred during upload'

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .result { margin: 20px 0; padding: 10px; border-radius: 5px; }
+        .success { background-color: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .error { background-color: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        button { padding: 10px 20px; margin: 10px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Transaction Upload Test</h1>
+    <button onclick="testUpload()">Test Upload</button>
+    <div id="result"></div>
+
+    <script>
+        async function testUpload() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testing upload...';
+            resultDiv.className = 'result';
+
+            try {
+                const testData = {
+                    transactions: [
+                        {
+                            accountNumber: "TEST001",
+                            numberOfAccounts: 1,
+                            reasonOfOpeningAccount: "Test Account",
+                            transactionAmount: 1000,
+                            transactionDate: "2024-01-15T00:00:00.000Z",
+                            risk_analysis: {
+                                risk_level: "LOW",
+                                score_label: "Test Score",
+                                trust_score: 95
+                            }
+                        },
+                        {
+                            accountNumber: "TEST001", // Same account number to test aggregation
+                            numberOfAccounts: 1,
+                            reasonOfOpeningAccount: "Test Account",
+                            transactionAmount: 500,
+                            transactionDate: "2024-01-16T00:00:00.000Z",
+                            risk_analysis: {
+                                risk_level: "MODERATE",
+                                score_label: "Test Score",
+                                trust_score: 85
+                            }
+                        },
+                        {
+                            accountNumber: "TEST002",
+                            numberOfAccounts: 2,
+                            reasonOfOpeningAccount: "Business Account",
+                            transactionAmount: 2000,
+                            transactionDate: "2024-01-17T00:00:00.000Z",
+                            risk_analysis: {
+                                risk_level: "HIGH",
+                                score_label: "High Risk",
+                                trust_score: 60
+                            }
+                        }
+                    ]
+                };
+
+                const response = await fetch('/api/transactions/upload-test', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(testData)
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <h3>✅ Upload Successful!</h3>
+                        <p><strong>Message:</strong> ${data.message}</p>
+                        <p><strong>Uploaded Count:</strong> ${data.uploadedCount}</p>
+                        <p><strong>Accounts Updated:</strong> ${data.accountsUpdated}</p>
+                        <p><strong>Test Data:</strong></p>
+                        <pre>${JSON.stringify(testData, null, 2)}</pre>
+                    `;
+                    resultDiv.className = 'result success';
+                } else {
+                    throw new Error(data.message || `HTTP ${response.status}`);
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <h3>❌ Upload Failed</h3>
+                    <p><strong>Error:</strong> ${error.message}</p>
+                `;
+                resultDiv.className = 'result error';
+            }
+        }
+    </script>
+</body>
+</html> 

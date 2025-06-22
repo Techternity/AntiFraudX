@@ -142,12 +142,7 @@ function App() {
                 <a href="/" className="px-3 py-2 text-white hover:bg-indigo-600 hover:text-white rounded-md transition duration-300 relative z-50">
                   Home
                 </a>
-                <a href="/about" className="px-3 py-2 text-white hover:bg-indigo-600 hover:text-white rounded-md transition duration-300 relative z-50">
-                  About
-                </a>
-                <a href="/contact" className="px-3 py-2 text-white hover:bg-indigo-600 hover:text-white rounded-md transition duration-300 relative z-50">
-                  Contact
-                </a>
+                
                 <button 
                   onClick={(e) => {
                     e.preventDefault();

@@ -100,6 +100,20 @@ export interface Bank {
   logo?: string;
 }
 
+export interface DisplayTransaction {
+  id: string;
+  accountNumber: string;
+  numberOfAccounts: number;
+  reasonOfOpeningAccount: string;
+  transactionAmount: number;
+  transactionDate: string;
+  risk_analysis: {
+    risk_level: string;
+    score_label: string;
+    trust_score: number;
+  };
+}
+
 export interface DashboardFilters {
   dateRange: {
     start: string;
