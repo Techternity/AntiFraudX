@@ -159,6 +159,14 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
         return 0;
     }
 
+    const riskLevelMap = {
+      good: 'LOW',
+      moderate: 'MODERATE',
+      bad: 'HIGH',
+      critical: 'CRITICAL',
+    };
+    
+    // Update risk_analysis reference to FraudShield trust score
     if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
     if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
     return 0;

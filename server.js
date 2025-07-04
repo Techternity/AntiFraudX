@@ -100,7 +100,7 @@ app.use('/api/optimized-transactions', optimizedTransactionRoutes);
 
 // Base route
 app.get('/', (req, res) => {
-  res.send('AntiFraudX API is running');
+  res.send('FraudShield API is running');
 });
 
 // Debug route to check API functionality

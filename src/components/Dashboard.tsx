@@ -256,7 +256,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         <div className="p-4 border-b border-indigo-800">
           <div className="flex items-center">
             <Shield className="text-white mr-2" size={24} />
-            <h1 className="text-xl font-bold">AntiFraudX</h1>
+            <h1 className="text-xl font-bold">FraudShield</h1>
           </div>
           <div className="text-xs text-indigo-300 mt-1">Transaction Security System</div>
         </div>

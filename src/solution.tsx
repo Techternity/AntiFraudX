@@ -220,7 +220,7 @@ const AppSolution = ({ user, onLogout }: AppSolutionProps) => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `RBI_Security_Report_${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `FraudShield_Security_Report_${new Date().toISOString().split('T')[0]}.csv`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -282,7 +282,7 @@ const AppSolution = ({ user, onLogout }: AppSolutionProps) => {
           <div className="text-center">
             <h1 className="text-3xl font-bold text-gray-800 flex items-center justify-center">
               <Shield className="mr-3 text-indigo-600" size={32} />
-              RBI - Secure Transaction Monitoring System
+              FraudShield Monitoring System
             </h1>
             <p className="text-lg text-gray-600 mt-2">
               Military-Grade Transaction Security and Fraud Detection
@@ -302,7 +302,7 @@ const AppSolution = ({ user, onLogout }: AppSolutionProps) => {
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
-              RBI System
+              FraudShield System
             </button>
             <button
               onClick={() => setCurrentView('bank')}

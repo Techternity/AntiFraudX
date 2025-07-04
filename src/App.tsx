@@ -134,7 +134,7 @@ function App() {
                   <Shield className="text-indigo-700" size={28} />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold text-white">AntiFraudX</h1>
+                  <h1 className="text-2xl font-bold text-white">FraudShield</h1>
                   <p className="text-xs text-indigo-200">Government Authorized Financial Security System</p>
                 </div>
               </div>
@@ -173,7 +173,7 @@ function App() {
                 <h4 className="text-sm font-bold tracking-wider uppercase">Government Endorsed Financial Security Platform</h4>
               </div>                <div className="text-center">
                 <h2 className="font-bold text-white leading-tight">
-                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-300 text-5xl md:text-6xl block mb-3 animate-pulse">AntiFraudX</span>
+                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-300 text-5xl md:text-6xl block mb-3 animate-pulse">FraudShield</span>
                   <span className="text-3xl md:text-4xl text-gray-200 block mb-6">Advanced Payment Fraud Prevention</span>
                 </h2>
                 <div className="w-24 h-1 bg-gradient-to-r from-blue-400 to-indigo-300 mx-auto rounded-full mb-8"></div>
@@ -246,26 +246,7 @@ function App() {
                 <div className="marquee-content flex items-center h-full">
                   <div className="flex items-center h-full animate-marquee">
                     {/* First segment */}
-                    <div className="flex items-center h-full">
-                      {/* Hack4Bengal Logo */}
-                      <div className="bg-white/95 rounded-full h-12 w-12 flex items-center justify-center shadow-glow mr-3">
-                        <img src="/assets/hack4bengal-logo.png" alt="Hack4Bengal" className="w-9 h-9 object-contain" 
-                           onError={(e) => {
-                             e.currentTarget.onerror = null;
-                             e.currentTarget.src = '';
-                             if (e.currentTarget.parentElement) {
-                               e.currentTarget.parentElement.innerHTML = 'H4B';
-                             }
-                           }} 
-                        />
-                      </div>
-                      
-                      <span className="text-white font-bold text-lg tracking-wider">
-                        BUILT AT HACK4BENGAL 2025 HACKATHON
-                      </span>
-                      
-                      <span className="text-indigo-300 px-4 mx-4">•</span>
-                    </div>
+                    
                     
                     {/* Second segment */}
                     <div className="flex items-center h-full">
@@ -332,26 +313,7 @@ function App() {
                     
                     {/* Repeat for continuous effect */}
                     {/* First segment (duplicate) */}
-                    <div className="flex items-center h-full">
-                      {/* Hack4Bengal Logo */}
-                      <div className="bg-white/95 rounded-full h-12 w-12 flex items-center justify-center shadow-glow mr-3">
-                        <img src="/assets/hack4bengal-logo.png" alt="Hack4Bengal" className="w-9 h-9 object-contain" 
-                           onError={(e) => {
-                             e.currentTarget.onerror = null;
-                             e.currentTarget.src = '';
-                             if (e.currentTarget.parentElement) {
-                               e.currentTarget.parentElement.innerHTML = 'H4B';
-                             }
-                           }} 
-                        />
-                      </div>
-                      
-                      <span className="text-white font-bold text-lg tracking-wider">
-                        BUILT AT HACK4BENGAL 2025 HACKATHON
-                      </span>
-                      
-                      <span className="text-indigo-300 px-4 mx-4">•</span>
-                    </div>
+                    
                     
                     {/* Second segment (duplicate) */}
                     <div className="flex items-center h-full">

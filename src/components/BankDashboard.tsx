@@ -52,7 +52,7 @@ export const BankDashboard: React.FC<BankDashboardProps> = ({
       const bankCode = accountId.substring(0, 4).toUpperCase();
       
       if (user.role === 'ADMIN') {
-        return true; // Admin can see all transactions
+        return true; // Admin can see all transactions in FraudShield
       }
       
       return bankCode === user.bank_code || 

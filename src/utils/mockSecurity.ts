@@ -38,7 +38,7 @@ export const simulateBlockchainVerification = (transaction: Transaction): Blockc
   };
 };
 
-// Calculate CIBYL risk score
+// Calculate CIBYL risk score for FraudShield
 export const calculateCibylScore = (transaction: Transaction): RiskAnalysis => {
   let score = 0;
   const riskFactors: string[] = [];

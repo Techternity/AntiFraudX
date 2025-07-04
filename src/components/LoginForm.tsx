@@ -96,7 +96,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
             <Shield className="text-indigo-600" size={42} />
           </div>
         </div>        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          AntiFraudX
+          FraudShield
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
           Advanced Fraud Detection & Prevention Platform

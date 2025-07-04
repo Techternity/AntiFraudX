@@ -56,7 +56,7 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
       setIsUploading(true);
       setUploadStatus(null);
       
-      console.log('Starting transaction upload process...');
+      console.log('Starting FraudShield transaction upload process...');
       
       // Prepare data for upload
       const transactionsToUpload = transactions.map(tx => ({
